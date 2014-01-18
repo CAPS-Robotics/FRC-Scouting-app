@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Connected Devices"
+        android:textSize="25sp" />
+
+    <ListView
+        android:id="@+id/DeviceList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:dividerHeight="10dp"
+        android:visibility="visible">
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="25dp"
+        android:text="Schedule:" />
+
+    <Spinner
+        android:id="@+id/scheduleSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_alignLeft="@+id/newScheduleB"
+        android:layout_alignRight="@+id/newScheduleB"
+        android:layout_alignTop="@+id/textView3" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/newScheduleB"
+        android:layout_centerHorizontal="true"
+        android:text="Scheduled Devices:" />
+
+    <TextView
+        android:id="@+id/Device1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView4"
+        android:layout_marginLeft="27dp"
+        android:layout_marginTop="12dp"
+        android:text="Device 1" />
+
+    <Spinner
+        android:id="@+id/Device1S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device1"
+        android:layout_alignLeft="@+id/newScheduleB"
+        android:layout_alignRight="@+id/newScheduleB"
+        android:layout_alignTop="@+id/Device1" />
+
+    <TextView
+        android:id="@+id/Device2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Device1"
+        android:layout_below="@+id/Device1"
+        android:layout_marginTop="12dp"
+        android:text="Device 2" />
+
+    <Spinner
+        android:id="@+id/Device2S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device2"
+        android:layout_alignLeft="@+id/Device1S"
+        android:layout_alignRight="@+id/Device1S"
+        android:layout_alignTop="@+id/Device2" />
+
+    <TextView
+        android:id="@+id/Device3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Device2"
+        android:layout_below="@+id/Device2"
+        android:layout_marginTop="12dp"
+        android:text="Device 3" />
+
+    <Spinner
+        android:id="@+id/Device3S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device3"
+        android:layout_alignLeft="@+id/Device2S"
+        android:layout_alignRight="@+id/Device2S"
+        android:layout_alignTop="@+id/Device3" />
+
+    <TextView
+        android:id="@+id/Device4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Device3"
+        android:layout_below="@+id/Device3"
+        android:layout_marginTop="12dp"
+        android:text="Device 4" />
+
+    <Spinner
+        android:id="@+id/Device4S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device4"
+        android:layout_alignLeft="@+id/Device3S"
+        android:layout_alignRight="@+id/Device3S"
+        android:layout_alignTop="@+id/Device4" />
+
+    <TextView
+        android:id="@+id/Device5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Device4"
+        android:layout_below="@+id/Device4"
+        android:layout_marginTop="12dp"
+        android:text="Device 5" />
+
+    <Spinner
+        android:id="@+id/Device5S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device5"
+        android:layout_alignLeft="@+id/Device4S"
+        android:layout_alignRight="@+id/Device4S"
+        android:layout_alignTop="@+id/Device5" />
+
+    <Button
+        android:id="@+id/newScheduleB"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_alignRight="@+id/textView1"
+        android:layout_below="@+id/scheduleSpinner"
+        android:layout_marginTop="12dp"
+        android:height="10dp"
+        android:maxHeight="10dp"
+        android:minHeight="10dp"
+        android:text="New Schedule"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/Device5S"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:text="Connected Devices:" />
+
+    <TextView
+        android:id="@+id/Device6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/Device5"
+        android:layout_below="@+id/Device5"
+        android:layout_marginTop="12dp"
+        android:text="Device 6" />
+
+    <Spinner
+        android:id="@+id/Device6S"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device6"
+        android:layout_alignLeft="@+id/Device5S"
+        android:layout_alignRight="@+id/Device5S"
+        android:layout_alignTop="@+id/Device6" />
+
+    <Button
+        android:id="@+id/button1"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Device1"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignTop="@+id/Device1"
+        android:text="Remove"
+        android:textSize="12sp" />
+
+</RelativeLayout>
