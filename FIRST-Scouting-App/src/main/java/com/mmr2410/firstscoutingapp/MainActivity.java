@@ -1,17 +1,16 @@
 package com.mmr2410.firstscoutingapp;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -26,13 +25,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,21 +40,19 @@ import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
-    Button hostB, clientB, settingsB, NewScheduleB, ssSaveB;
+    Button hostB, clientB, settingsB, NewScheduleB, ssSaveB,hostStartB;
     Spinner cospinner;
     Spinner mispinner;
-    Spinner s1, s2, s3, s4, s5, s6, s7, s8;
+    Spinner s1;
     ArrayAdapter<String> communicationOptions;
     ArrayList<String> matchInfoFiles = new ArrayList<String>();
     ArrayList<LinearLayout> DeviceOptionLayouts = new ArrayList<LinearLayout>();
     ArrayList<Spinner> DeviceListSpinners;
     ArrayAdapter<String> adapter;
-    File testFile, fileLocation, scheduleFile;
+    File tempFile, fileLocation;
     List<String> files = new ArrayList<String>();
-    List<String> btDevices = new ArrayList<String>();
+    List<String> btDevices, listBuffer, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
-    String testFileName = "Ultimate-Ascent";
-    String testFileContents = "Climb to victory!";
     int lastScreen = 0;
     int currentScreen = R.layout.activity_main;
     BluetoothAdapter bt;
@@ -63,14 +60,13 @@ public class MainActivity extends ActionBarActivity {
     FileOutputStream fos;
     FileInputStream fis;
     InputStream in;
-    BufferedReader reader;
+    BufferedReader reader,reader2;
+
 
     Point pointBuffer = new Point();
-    LinearLayout ssMainLayout, ssGenerated, l1, l2;
-    TextView t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
-    EditText e1, e2, e3, e4, e5, e6, e7, matchNumInput, deviceNumInput, ssFileName;
-    TimePicker p1;
-    ArrayList<LinearLayout> lls;
+    LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
+    TextView t1, t2, t3, t4, t5, t6, t7;
+    EditText e1, e2, matchNumInput, deviceNumInput, ssFileName;
     ArrayList<EditText> teamNums;
     ArrayList<EditText> devices;
     int numTeams = 0;
@@ -78,6 +74,7 @@ public class MainActivity extends ActionBarActivity {
     int componentWidth = 0;
     int loopTimes = 0;
     String stringBuffer;
+    String tag = "FIRST-Scouting";
 
 
     @Override
@@ -85,19 +82,6 @@ public class MainActivity extends ActionBarActivity {
         display = getWindowManager().getDefaultDisplay();
 //        setTheme(android.R.style.Theme_Black);
         super.onCreate(savedInstanceState);
-        try {
-            fos = openFileOutput(testFileName, Context.MODE_PRIVATE);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            fos.write(testFileContents.getBytes());
-            fos.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        fileLocation = new File(getFilesDir().getAbsolutePath());
         toHomeScreen();
     }
 
@@ -109,17 +93,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onBackPressed() {
-        if (lastScreen == 0) {
-            finish();
-        } else if (lastScreen == R.layout.activity_main) {
-            toHomeScreen();
-        } else if (lastScreen == R.layout.client_screen) {
-            toClientScreen();
-        } else if (lastScreen == R.layout.host) {
-            toHostScreen();
-        } else if (lastScreen == R.layout.settings_screen) {
-            toSettingsScreen();
-        }
+        toHomeScreen();
     }
 
     public void toHomeScreen() {
@@ -152,9 +126,12 @@ public class MainActivity extends ActionBarActivity {
     public void toHostScreen() {
         DeviceListSpinners = new ArrayList<Spinner>();
         scheduledFiles = new ArrayList<String>();
+        btDevices = new ArrayList<String>();
         bt = BluetoothAdapter.getDefaultAdapter();
         lastScreen = currentScreen;
         setContentView(R.layout.host);
+        ll = (LinearLayout)findViewById(R.id.Devices);
+        ll.removeAllViews();
         fileLocation = new File(getFilesDir().getAbsolutePath());
         for (int i = 0; i < fileLocation.listFiles().length; i++) {
             scheduledFiles.add(fileLocation.listFiles()[i].getName());
@@ -164,49 +141,62 @@ public class MainActivity extends ActionBarActivity {
         try {
             s1.setAdapter(adapter);
         } catch (Exception e) {
+            Log.e(tag,e.toString());
         }
+
+        Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
+        btDevices.add("<None>");
+        btDevices.add("<This Device>");
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                btDevices.add(device.getName() + "\n" + device.getAddress() + "");
+            }
+        }else{
+            Log.e(tag,"No bluetooth Devices found, ignoring for now...");
+        }
+
         s1.setOnItemSelectedListener(new OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+                ll = (LinearLayout)findViewById(R.id.Devices);
+                ll.removeAllViews();
                 try {
                     in = new FileInputStream(getFilesDir().getAbsolutePath() + "/" + arg0.getSelectedItem().toString());
-                    Log.e("FIRST-Scouting", "Success!!");
+                    reader = new BufferedReader(new InputStreamReader(in));
+                    stringBuffer = reader.readLine();
                 } catch (Exception e) {
-                    System.out.println(e.toString());
-                    Log.e("FIRST-Scouting", e.toString());
+                    Log.e(tag, e.toString());
                 }
-                reader = new BufferedReader(new InputStreamReader(in));
-                try {
-                    Log.e("FIRST-Scouting", reader.readLine().toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e("FIRST-Scouting", e.toString());
-                }
-
-                Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
-                if (pairedDevices.size() > 0) {
-                    for (BluetoothDevice device : pairedDevices) {
-                        btDevices.add(device.getName() + "\n" + device.getAddress() + "");
-                    }
+                try{
+                    numDevices = Integer.parseInt(stringBuffer);
+                }catch(Exception e){
+                    Log.e(tag,"Error parsing file. Unrecognized file format?");
                 }
                 adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, btDevices);
-                s1 = new Spinner(MainActivity.this);
-                DeviceListSpinners.add(s1);
-                for (Spinner s : DeviceListSpinners) {
-                    try {
-                        s.setAdapter(adapter);
-                    } catch (Exception e) {
-                        System.out.println(e);
-                    }
+                DeviceListSpinners = new ArrayList<Spinner>();
+                for(int i = 1; i<=numDevices;i++){
+                    l1 = new LinearLayout(MainActivity.this);
+                    l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,100));
+                    t1 = new TextView(MainActivity.this);
+                    t1.setText("Device " + i + ":");
+                    t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+                    t1.setGravity(Gravity.CENTER_VERTICAL);
+                    l1.addView(t1);
+                    s1 = new Spinner(MainActivity.this);
+                    s1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+                    s1.setAdapter(adapter);
+                    l1.addView(s1);
+                    DeviceListSpinners.add(s1);
+                    ll.addView(l1);
                 }
+                adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, btDevices);
 
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-
+                Log.e(tag,"Nothing selected, how did you do that?");
             }
         });
         currentScreen = R.layout.host;
@@ -215,6 +205,40 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 toScheduleSetupScreen();
+            }
+        });
+        s1 = (Spinner)findViewById(R.id.scheduleSpinner);
+        hostStartB = (Button)findViewById(R.id.HostStart);
+        hostStartB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    //makes file for host settings.
+                    tempFile = new File(getCacheDir().getAbsolutePath()+"hostInfo");
+                    Log.d(tag,"found/made temp host file in cache directory");
+                }catch(Exception e){
+                    Log.e(tag,"unable to find or create temp file");
+                }
+                try {
+                    fos = new FileOutputStream(tempFile);
+                    Log.d(tag,"output stream created");
+                    s1 = (Spinner)findViewById(R.id.scheduleSpinner);
+                    fos.write(s1.getSelectedItem().toString().getBytes());
+                    fos.write("\n".getBytes());
+                    for(Spinner s:DeviceListSpinners){
+                        fos.write(s.getSelectedItem().toString().getBytes());
+                        fos.write("\n".getBytes());
+                    }
+                    Log.d(tag,"wrote to host temp file");
+                    Log.d(tag,"flushing and closing output stream");
+                    fos.flush();
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.e(tag,e.toString());
+                } catch (IOException e1) {
+                    Log.e(tag,e1.toString());
+                }
+                toHostMonitor();
             }
         });
     }
@@ -273,11 +297,10 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onClick(View v) {
-                System.out.println(getFilesDir().getAbsolutePath().toString());
                 try {
                     fos = openFileOutput(ssFileName.getText().toString(), Context.MODE_PRIVATE);
                 } catch (FileNotFoundException e2) {
-                    // TODO Auto-generated catch block///////////////////////////////// make something for this
+                    // TODO Auto-generated catch block
                     e2.printStackTrace();
                 }
 //                                }
@@ -301,6 +324,7 @@ public class MainActivity extends ActionBarActivity {
                             fos.write(",".getBytes());
                         }
                     }
+                    fos.flush();
                     fos.close();
                 } catch (Exception e) {
                     e.printStackTrace();///////////////////////////////// make something for this
@@ -310,10 +334,98 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
+    public void toHostMonitor(){
+        setContentView(R.layout.host_monitor);
+        try {
+            in = new FileInputStream(getCacheDir().getAbsolutePath()+"hostInfo");
+            reader = new BufferedReader(new InputStreamReader(in));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,"unable to make file input stream");
+        }
+
+        ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
+
+        t1 = new TextView(this);
+        try {
+            t1.setText(reader.readLine().toString());
+        } catch (IOException e) {
+            Log.e(tag,"hi!! "+e.toString());
+        }
+        files = new ArrayList<String>();//TODO
+        fileLocation = new File(getCacheDir().getAbsolutePath()+"/hostInfo");
+        try {
+            reader = new BufferedReader(new FileReader(fileLocation));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        }
+
+        t1 = new TextView(this);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        try {
+            reader = new BufferedReader(new FileReader(fileLocation));
+            reader2 = new BufferedReader(new FileReader(fileLocation));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        }
+
+        try {
+            t1.setText(reader.readLine().toString());
+            ll.addView(t1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        files = new ArrayList<String>();
+        btDeviceNames = new ArrayList<String>();
+        try{
+            reader2.readLine();
+            while(reader2.readLine()!=null){
+                btDeviceNames.add(reader.readLine().toString());
+            }
+        }catch(Exception e){Log.e(tag,e.toString());}
+        listBuffer = new ArrayList<String>();
+        for(int i = 1;i<=btDeviceNames.size();i++){
+            listBuffer.add(Integer.toString(i));
+        }
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, listBuffer);
+        for(int i = 1; i<=btDeviceNames.size();i++){
+
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,5));
+            t1.setBackgroundColor(Color.RED);
+            ll.addView(t1);
+
+            l1 = new LinearLayout(this);
+            l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            l1.setOrientation(LinearLayout.HORIZONTAL);
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            t1.setText(btDeviceNames.get(i - 1) + " : ");
+            l1.addView(t1);
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(50, 1));
+            t1.setText("");
+            l1.addView(t1);
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            t1.setText("Assigned Device: ");
+            l1.addView(t1);
+            s1 = new Spinner(this);
+            s1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+//            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)s1.getLayoutParams();
+//            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT); //null pointer exception
+//            s1.setLayoutParams(params);
+            s1.setAdapter(adapter);
+            l1.addView(s1);
+            ll.addView(l1);
+
+        }
+
+    }
 
     /**
      * <p/>
-     * Adds a section used for inputing a match. Uses matchNum to display the match number and ll is the linear layout used to add the components to.
+     * Adds a section used for imputing a match. Uses matchNum to display the match number and ll is the linear layout used to add the components to.
      */
     void newMatch(int matchNum, int numOfMatches, LinearLayout ll) {
         loopTimes = 1;
