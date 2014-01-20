@@ -41,9 +41,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
-    Button hostB, clientB, settingsB, NewScheduleB, ssSaveB,hostStartB;
-    Spinner cospinner;
-    Spinner mispinner;
+    Button hostB, clientB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
+    Spinner cospinner,mispinner;
     Spinner s1;
     ArrayAdapter<String> communicationOptions;
     ArrayList<String> matchInfoFiles = new ArrayList<String>();
@@ -73,10 +72,7 @@ public class MainActivity extends ActionBarActivity {
     EditText e1, e2, matchNumInput, deviceNumInput, ssFileName;
     ArrayList<EditText> teamNums;
     ArrayList<EditText> devices;
-    int numTeams = 0;
-    int numDevices = 0;
-    int componentWidth = 0;
-    int loopTimes = 0;
+    int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
     String tag = "FIRST-Scouting";
 
@@ -153,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
         btDevices.add("<This Device>");
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                btDevices.add(device.getName() + device.getAddress() + "");
+                btDevices.add(device.getName() + "");
             }
         }else{
             Log.e(tag,"No bluetooth Devices found, ignoring for now...");
@@ -393,11 +389,16 @@ public class MainActivity extends ActionBarActivity {
             listBuffer.add(Integer.toString(i));
         }
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, listBuffer);
+
+        t1 = new TextView(this);
+        t1.setLayoutParams(new LayoutParams(1, 10));
+        ll.addView(t1);
+
         for(int i = 1; i<=btDeviceNames.size();i++){
 
             t1 = new TextView(this);
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,5));
-            t1.setBackgroundColor(Color.RED);
+            t1.setBackgroundColor(Color.BLUE);
             ll.addView(t1);
 
             l1 = new LinearLayout(this);
@@ -408,12 +409,34 @@ public class MainActivity extends ActionBarActivity {
             t1.setText(btDeviceNames.get(i - 1) + " : ");
             l1.addView(t1);
             t1 = new TextView(this);
-            t1.setLayoutParams(new LayoutParams(50, 1));
-            t1.setText("");
+            if(btDeviceNames.get(i-1).toString().equals("<This Device>")){
+                t1.setText("Connected");
+                t1.setTextColor(Color.GREEN);
+            }else{
+                t1.setText(" Disconnected");
+                t1.setTextColor(Color.RED);
+            }
+            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            connectionStatus.add(t1);
             l1.addView(t1);
             ll.addView(l1);
-
         }
+        t1 = new TextView(this);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,5));
+        t1.setBackgroundColor(Color.BLUE);
+        ll.addView(t1);
+
+        l1 = new LinearLayout(this);
+        l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+        l1.setGravity(Gravity.CENTER);
+        t1 = new TextView(this);
+        t1.setLayoutParams(new LayoutParams(1,20));
+
+        b1 = new Button(this);
+        b1.setText("Send Data");
+        b1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+        l1.addView(b1);
+        ll.addView(l1);
 
     }
 
