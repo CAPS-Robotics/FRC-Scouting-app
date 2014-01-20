@@ -2,6 +2,7 @@ package com.mmr2410.firstscoutingapp;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -49,13 +50,16 @@ public class MainActivity extends ActionBarActivity {
     ArrayList<LinearLayout> DeviceOptionLayouts = new ArrayList<LinearLayout>();
     ArrayList<Spinner> DeviceListSpinners;
     ArrayAdapter<String> adapter;
+    ArrayList<TextView> connectionStatus;
     File tempFile, fileLocation;
     List<String> files = new ArrayList<String>();
     List<String> btDevices, listBuffer, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
+    Set<BluetoothDevice> pairedDevices;
     int lastScreen = 0;
     int currentScreen = R.layout.activity_main;
     BluetoothAdapter bt;
+    BroadcastReceiver br;
     Display display;
     FileOutputStream fos;
     FileInputStream fis;
@@ -144,12 +148,12 @@ public class MainActivity extends ActionBarActivity {
             Log.e(tag,e.toString());
         }
 
-        Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
+        pairedDevices = bt.getBondedDevices();
         btDevices.add("<None>");
         btDevices.add("<This Device>");
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                btDevices.add(device.getName() + "\n" + device.getAddress() + "");
+                btDevices.add(device.getName() + device.getAddress() + "");
             }
         }else{
             Log.e(tag,"No bluetooth Devices found, ignoring for now...");
@@ -230,13 +234,12 @@ public class MainActivity extends ActionBarActivity {
                     s1 = (Spinner)findViewById(R.id.scheduleSpinner);
                     fos.write(s1.getSelectedItem().toString().getBytes());
                     fos.write("\n".getBytes());
-                    Log.d(tag,s1.getSelectedItem().toString());
                     for(Spinner s:DeviceListSpinners){
                         fos.write(s.getSelectedItem().toString().getBytes());
                         fos.write("\n".getBytes());
                     }
                     Log.d(tag,"wrote to host temp file");
-                    Log.d(tag,"flushing and closing output stream");
+                    Log.d(tag, "flushing and closing output stream");
                     fos.flush();
                     fos.close();
                 } catch (FileNotFoundException e) {
@@ -342,6 +345,11 @@ public class MainActivity extends ActionBarActivity {
 
     public void toHostMonitor(){
         setContentView(R.layout.host_monitor);
+        bt = BluetoothAdapter.getDefaultAdapter();
+        connectionStatus = new ArrayList<TextView>();
+
+
+        // need to try sending data to devices to see if they are connected
 
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
 
@@ -362,7 +370,9 @@ public class MainActivity extends ActionBarActivity {
             Log.d(tag,"made buffered readers");
             t1 = new TextView(this);
             t1.setText(reader.readLine().toString());
+            t1.setTextSize(20);
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            t1.setGravity(Gravity.CENTER);
             ll.addView(t1);
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
@@ -401,17 +411,6 @@ public class MainActivity extends ActionBarActivity {
             t1.setLayoutParams(new LayoutParams(50, 1));
             t1.setText("");
             l1.addView(t1);
-            t1 = new TextView(this);
-            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-            t1.setText("Assigned Device: ");
-            l1.addView(t1);
-            s1 = new Spinner(this);
-            s1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
-//            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)s1.getLayoutParams();
-//            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT); //null pointer exception
-//            s1.setLayoutParams(params);
-            s1.setAdapter(adapter);
-            l1.addView(s1);
             ll.addView(l1);
 
         }
