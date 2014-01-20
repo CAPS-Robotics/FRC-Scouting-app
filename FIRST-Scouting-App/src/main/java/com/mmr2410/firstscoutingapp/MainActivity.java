@@ -215,7 +215,12 @@ public class MainActivity extends ActionBarActivity {
                 try{
                     //makes file for host settings.
                     tempFile = new File(getCacheDir().getAbsolutePath()+"hostInfo");
-                    Log.d(tag,"found/made temp host file in cache directory");
+                    if(tempFile.mkdirs()){
+                        tempFile.createNewFile();
+                        Log.d(tag,"made temp file");
+                    }else{
+                        Log.d(tag,"found temp host file in cache directory");
+                    }
                 }catch(Exception e){
                     Log.e(tag,"unable to find or create temp file");
                 }
@@ -225,6 +230,7 @@ public class MainActivity extends ActionBarActivity {
                     s1 = (Spinner)findViewById(R.id.scheduleSpinner);
                     fos.write(s1.getSelectedItem().toString().getBytes());
                     fos.write("\n".getBytes());
+                    Log.d(tag,s1.getSelectedItem().toString());
                     for(Spinner s:DeviceListSpinners){
                         fos.write(s.getSelectedItem().toString().getBytes());
                         fos.write("\n".getBytes());
@@ -336,12 +342,6 @@ public class MainActivity extends ActionBarActivity {
 
     public void toHostMonitor(){
         setContentView(R.layout.host_monitor);
-        try {
-            in = new FileInputStream(getCacheDir().getAbsolutePath()+"hostInfo");
-            reader = new BufferedReader(new InputStreamReader(in));
-        } catch (FileNotFoundException e) {
-            Log.e(tag,"unable to make file input stream");
-        }
 
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
 
@@ -349,30 +349,25 @@ public class MainActivity extends ActionBarActivity {
         try {
             t1.setText(reader.readLine().toString());
         } catch (IOException e) {
-            Log.e(tag,"hi!! "+e.toString());
-        }
-        files = new ArrayList<String>();//TODO
-        fileLocation = new File(getCacheDir().getAbsolutePath()+"/hostInfo");
-        try {
-            reader = new BufferedReader(new FileReader(fileLocation));
-        } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         }
+        files = new ArrayList<String>();//TODO
+        try{
+            fileLocation = new File(getCacheDir().getAbsolutePath()+"hostInfo");
+        }catch(Exception e){Log.e(tag,e.toString());}
 
-        t1 = new TextView(this);
-        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         try {
             reader = new BufferedReader(new FileReader(fileLocation));
             reader2 = new BufferedReader(new FileReader(fileLocation));
+            Log.d(tag,"made buffered readers");
+            t1 = new TextView(this);
+            t1.setText(reader.readLine().toString());
+            t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            ll.addView(t1);
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
-        }
-
-        try {
-            t1.setText(reader.readLine().toString());
-            ll.addView(t1);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag,e.toString());
         }
 
         files = new ArrayList<String>();
