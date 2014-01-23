@@ -24,6 +24,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -64,8 +66,6 @@ public class MainActivity extends ActionBarActivity {
     FileInputStream fis;
     InputStream in;
     BufferedReader reader,reader2;
-
-
     Point pointBuffer = new Point();
     LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
     TextView t1, t2, t3, t4, t5, t6, t7;
@@ -75,6 +75,8 @@ public class MainActivity extends ActionBarActivity {
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
     String tag = "FIRST-Scouting";
+    ListView lv1;
+    ProgressBar pb;
 
 
     @Override
@@ -88,6 +90,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        menu.add("Home");
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -249,9 +252,23 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toClientScreen() {
-        lastScreen = currentScreen;
-        setContentView(R.layout.client_screen);
-        currentScreen = R.layout.client_screen;
+        setContentView(R.layout.join_host);
+        btDevices = new ArrayList<String>();
+        bt = BluetoothAdapter.getDefaultAdapter();
+        pairedDevices = bt.getBondedDevices();
+        pb = (ProgressBar)findViewById(R.id.progressBar1);
+        for(BluetoothDevice b: pairedDevices){
+            btDevices.add(b.getName());
+        }
+        lv1 = (ListView)findViewById(R.id.hostList);
+        adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, btDevices);
+        lv1.setAdapter(adapter);
+        lv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                pb.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     public void toSettingsScreen() {
