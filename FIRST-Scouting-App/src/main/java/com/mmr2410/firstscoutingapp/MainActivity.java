@@ -3,7 +3,6 @@ package com.mmr2410.firstscoutingapp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -43,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
-    Button hostB, clientB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
+    Button hostB, clientB,sendB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
     Spinner cospinner,mispinner;
     Spinner s1;
     ArrayAdapter<String> communicationOptions;
@@ -52,7 +51,7 @@ public class MainActivity extends ActionBarActivity {
     ArrayList<Spinner> DeviceListSpinners;
     ArrayAdapter<String> adapter;
     ArrayList<TextView> connectionStatus;
-    File tempFile, fileLocation;
+    File tempFile;
     List<String> files = new ArrayList<String>();
     List<String> btDevices, listBuffer, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
@@ -75,6 +74,7 @@ public class MainActivity extends ActionBarActivity {
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
     String tag = "FIRST-Scouting";
+    String fileLocation = "storage/sdcard0/FIRST-Scouting/";
     ListView lv1;
     ProgressBar pb;
 
@@ -84,6 +84,14 @@ public class MainActivity extends ActionBarActivity {
         display = getWindowManager().getDefaultDisplay();
 //        setTheme(android.R.style.Theme_Black);
         super.onCreate(savedInstanceState);
+        try{
+            tempFile = new File(fileLocation);
+            tempFile.mkdirs();
+            tempFile = new File(fileLocation+"schedules");
+            tempFile.mkdirs();
+            tempFile = new File(fileLocation+"matchdata");
+            tempFile.mkdirs();
+        }catch(Exception e){Log.e(tag,e.toString());}
         toHomeScreen();
     }
 
@@ -105,6 +113,7 @@ public class MainActivity extends ActionBarActivity {
         currentScreen = R.layout.activity_main;
         hostB = (Button) findViewById(R.id.newScheduleB);
         clientB = (Button) findViewById(R.id.ClientB);
+        sendB = (Button)findViewById(R.id.SendB);
         settingsB = (Button) findViewById(R.id.SettingsB);
         hostB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,6 +124,12 @@ public class MainActivity extends ActionBarActivity {
         clientB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 toClientScreen();
+
+            }
+        });
+        sendB.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                toSendScreen();
 
             }
         });
@@ -135,9 +150,9 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.host);
         ll = (LinearLayout)findViewById(R.id.Devices);
         ll.removeAllViews();
-        fileLocation = new File(getFilesDir().getAbsolutePath());
-        for (int i = 0; i < fileLocation.listFiles().length; i++) {
-            scheduledFiles.add(fileLocation.listFiles()[i].getName());
+        tempFile = new File(fileLocation+"schedules");
+        for (int i = 0; i < tempFile.listFiles().length; i++) {
+            scheduledFiles.add(tempFile.listFiles()[i].getName());
         }
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, scheduledFiles);
         s1 = (Spinner) findViewById(R.id.scheduleSpinner);
@@ -165,7 +180,7 @@ public class MainActivity extends ActionBarActivity {
                 ll = (LinearLayout)findViewById(R.id.Devices);
                 ll.removeAllViews();
                 try {
-                    in = new FileInputStream(getFilesDir().getAbsolutePath() + "/" + arg0.getSelectedItem().toString());
+                    in = new FileInputStream(fileLocation+"schedules/"+ arg0.getSelectedItem().toString());
                     reader = new BufferedReader(new InputStreamReader(in));
                     stringBuffer = reader.readLine();
                 } catch (Exception e) {
@@ -251,7 +266,16 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
-    public void toClientScreen() {
+    public void toClientScreen(){
+        setContentView(R.layout.client_screen);
+        tempFile = new File(fileLocation+"schedules/");
+        files = new ArrayList<String>();
+        for (File file : tempFile.listFiles()) {
+            files.add(file.getName());
+        }
+    }
+
+    public void toSendScreen() {
         setContentView(R.layout.join_host);
         btDevices = new ArrayList<String>();
         bt = BluetoothAdapter.getDefaultAdapter();
@@ -276,11 +300,12 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.settings_screen);
         currentScreen = R.layout.settings_screen;
         cospinner = (Spinner) findViewById(R.id.scheduleSpinner);
+        files = new ArrayList<String>();
         communicationOptions = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, android.R.layout.simple_spinner_item);
         cospinner.setAdapter(communicationOptions);
         mispinner = (Spinner) findViewById(R.id.matchInfoSpinner);
 
-        for (File file : fileLocation.listFiles()) {
+        for (File file : tempFile.listFiles()) {
             files.add(file.getName());
         }
 
@@ -320,10 +345,14 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    fos = openFileOutput(ssFileName.getText().toString(), Context.MODE_PRIVATE);
+                    tempFile = new File(fileLocation+"schedules",ssFileName.getText().toString());
+                    tempFile.createNewFile();
+                    fos = new FileOutputStream(tempFile);
                 } catch (FileNotFoundException e2) {
                     // TODO Auto-generated catch block
-                    e2.printStackTrace();
+                    Log.e(tag, e2.toString());
+                } catch (IOException e) {
+                    Log.e(tag,e.toString());
                 }
 //                                }
                 try {
@@ -349,7 +378,7 @@ public class MainActivity extends ActionBarActivity {
                     fos.flush();
                     fos.close();
                 } catch (Exception e) {
-                    e.printStackTrace();///////////////////////////////// make something for this
+                    Log.e(tag,e.toString());
                 }
             }
         });
@@ -374,12 +403,12 @@ public class MainActivity extends ActionBarActivity {
         }
         files = new ArrayList<String>();//TODO
         try{
-            fileLocation = new File(getCacheDir().getAbsolutePath()+"hostInfo");
+            tempFile = new File(getCacheDir().getAbsolutePath()+"hostInfo");
         }catch(Exception e){Log.e(tag,e.toString());}
 
         try {
-            reader = new BufferedReader(new FileReader(fileLocation));
-            reader2 = new BufferedReader(new FileReader(fileLocation));
+            reader = new BufferedReader(new FileReader(tempFile));
+            reader2 = new BufferedReader(new FileReader(tempFile));
             Log.d(tag,"made buffered readers");
             t1 = new TextView(this);
             t1.setText(reader.readLine().toString());
