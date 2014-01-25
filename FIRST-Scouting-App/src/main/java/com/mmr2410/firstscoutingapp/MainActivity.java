@@ -27,6 +27,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -270,8 +271,28 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.client_screen);
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
+
+        ll = (LinearLayout)findViewById(R.id.clientLayout);
+
         for (File file : tempFile.listFiles()) {
             files.add(file.getName());
+
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+            l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,5));
+            t1.setBackgroundColor(Color.BLUE);
+            l1.addView(t1);
+
+            t1 = new TextView(this);
+            t1.setText(file.getName());
+            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+            l1.addView(t1);
+
+            ll.addView(l1);
+
         }
     }
 
@@ -326,15 +347,18 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    ssGenerated.removeAllViews();
-                    teamNums = new ArrayList<EditText>();
-                    devices = new ArrayList<EditText>();
-                    newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
-                    return true;
-                } else {
-                    return false;
-                }
+                ssGenerated.removeAllViews();
+                teamNums = new ArrayList<EditText>();
+                devices = new ArrayList<EditText>();
+                try{
+                    if(Integer.parseInt(matchNumInput.getText().toString())>50){
+                        Toast.makeText(getApplicationContext(),"Please wait for layout to load...",1000);//TODO this doesn't work yet
+                        newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
+                    }else{
+                        newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
+                    }
+                }catch(Exception e){Log.e(tag,"Might be no input, but here is the error anyways: "+toString());}
+                return false;
             }
         });
 
