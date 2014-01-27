@@ -53,7 +53,7 @@
         android:layout_marginTop="16dp"
         android:minHeight="32dp"
         android:minWidth="96dp"
-        android:text="Join"
+        android:text="Scout"
         android:textSize="15sp"
         android:layout_gravity="center_horizontal" />
 

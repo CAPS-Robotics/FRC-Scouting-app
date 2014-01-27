@@ -277,19 +277,24 @@ public class MainActivity extends ActionBarActivity {
         for (File file : tempFile.listFiles()) {
             files.add(file.getName());
 
+            try {
+                reader = new BufferedReader(new FileReader(file));
+            } catch (FileNotFoundException e) {
+                Log.e(tag,e.toString());
+            }
+
             l1 = new LinearLayout(this);
             l1.setOrientation(LinearLayout.VERTICAL);
             l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 
-            t1 = new TextView(this);
-            t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,5));
-            t1.setBackgroundColor(Color.BLUE);
-            l1.addView(t1);
-
-            t1 = new TextView(this);
-            t1.setText(file.getName());
-            t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
-            l1.addView(t1);
+            newDivider(Color.BLUE,5,l1);
+            newTextView(file.getName(),l1);
+            try {
+                newTextView(reader.readLine(),l1);
+                newTextView(reader.readLine(),l1);
+            } catch (IOException e) {
+                Log.e(tag,e.toString());
+            }
 
             ll.addView(l1);
 
@@ -637,5 +642,20 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l2);
             loopTimes++;
         }
+    }
+
+    public void newTextView(String text,LinearLayout ll){
+        t1 = new TextView(this);
+        t1.setText(text);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+        ll.addView(t1);
+    }
+
+    public void newDivider(int color, int height, LinearLayout ll){
+        t1 = new TextView(this);
+        t1.setText("");
+        t1.setBackgroundColor(color);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,height));
+        ll.addView(t1);
     }
 }
