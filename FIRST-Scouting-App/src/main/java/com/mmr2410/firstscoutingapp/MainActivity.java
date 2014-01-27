@@ -38,6 +38,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -78,6 +81,7 @@ public class MainActivity extends ActionBarActivity {
     String fileLocation = "storage/sdcard0/FIRST-Scouting/";
     ListView lv1;
     ProgressBar pb;
+    URL url = null;
 
 
     @Override
@@ -271,6 +275,11 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.client_screen);
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
+        try {
+            url = new URL("http://www.thefirstalliance.org/api/api.json.php?action=list-teams");
+        } catch (MalformedURLException e) {
+            Log.e(tag,e.toString());
+        }
 
         ll = (LinearLayout)findViewById(R.id.clientLayout);
 
@@ -279,7 +288,12 @@ public class MainActivity extends ActionBarActivity {
 
             try {
                 reader = new BufferedReader(new FileReader(file));
+                reader2 = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
             } catch (FileNotFoundException e) {
+                Log.e(tag,e.toString());
+            } catch (UnsupportedEncodingException e) {
+                Log.e(tag,e.toString());
+            } catch (IOException e) {
                 Log.e(tag,e.toString());
             }
 
@@ -292,6 +306,11 @@ public class MainActivity extends ActionBarActivity {
             try {
                 newTextView(reader.readLine(),l1);
                 newTextView(reader.readLine(),l1);
+                newTextView(reader2.readLine(),l1);
+                newTextView(reader2.readLine(),l1);
+                newTextView(reader2.readLine(),l1);
+                newTextView(reader2.readLine(),l1);
+                newTextView(reader2.readLine(),l1);
             } catch (IOException e) {
                 Log.e(tag,e.toString());
             }
