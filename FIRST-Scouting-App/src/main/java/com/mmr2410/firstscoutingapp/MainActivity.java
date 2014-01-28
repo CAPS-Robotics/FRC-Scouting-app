@@ -38,8 +38,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +81,7 @@ public class MainActivity extends ActionBarActivity {
     ProgressBar pb;
     URL url = null;
 
+//    new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -275,23 +274,23 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.client_screen);
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
-        try {
-            url = new URL("http://www.thefirstalliance.org/api/api.json.php?action=list-teams");
-        } catch (MalformedURLException e) {
-            Log.e(tag,e.toString());
-        }
 
         ll = (LinearLayout)findViewById(R.id.clientLayout);
+//
+//        try {
+//            Log.d(tag,new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get());
+//        } catch (InterruptedException e) {
+//            Log.e(tag,e.toString());
+//        } catch (ExecutionException e) {
+//            Log.e(tag,e.toString());
+//        }
 
         for (File file : tempFile.listFiles()) {
             files.add(file.getName());
 
             try {
                 reader = new BufferedReader(new FileReader(file));
-                reader2 = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
             } catch (FileNotFoundException e) {
-                Log.e(tag,e.toString());
-            } catch (UnsupportedEncodingException e) {
                 Log.e(tag,e.toString());
             } catch (IOException e) {
                 Log.e(tag,e.toString());
@@ -305,12 +304,7 @@ public class MainActivity extends ActionBarActivity {
             newTextView(file.getName(),l1);
             try {
                 newTextView(reader.readLine(),l1);
-                newTextView(reader.readLine(),l1);
-                newTextView(reader2.readLine(),l1);
-                newTextView(reader2.readLine(),l1);
-                newTextView(reader2.readLine(),l1);
-                newTextView(reader2.readLine(),l1);
-                newTextView(reader2.readLine(),l1);
+                newTextView(reader.readLine(), l1);
             } catch (IOException e) {
                 Log.e(tag,e.toString());
             }
