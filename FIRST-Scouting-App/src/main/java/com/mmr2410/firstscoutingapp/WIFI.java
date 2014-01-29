@@ -6,25 +6,20 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
  * Created by Cooper on 1/27/14.
  */
-public class WIFI extends AsyncTask<String, String, String> {
+public class WIFI extends AsyncTask<URL, String, String> {
 
     BufferedReader reader;
     URL url;
     String tag = "FIRST-Scouting";
 
     @Override
-    protected String doInBackground(String... urls) {
-        try {
-            url = new URL(urls[0]);
-        } catch (MalformedURLException e) {
-            Log.e(tag,e.toString());
-        }
+    protected String doInBackground(URL... urls) {
+        url = urls[0];
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
         } catch (IOException e) {

@@ -80,6 +80,7 @@ public class MainActivity extends ActionBarActivity {
     ListView lv1;
     ProgressBar pb;
     URL url = null;
+    DataHandling dh = new DataHandling();
 
 //    new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get()
 
@@ -305,6 +306,7 @@ public class MainActivity extends ActionBarActivity {
             try {
                 newTextView(reader.readLine(),l1);
                 newTextView(reader.readLine(), l1);
+                newTextView(dh.getString("http://www.thefirstalliance.org/api/api.json.php?action=list-teams","data"),l1);
             } catch (IOException e) {
                 Log.e(tag,e.toString());
             }
