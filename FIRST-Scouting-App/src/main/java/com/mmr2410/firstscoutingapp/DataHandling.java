@@ -3,10 +3,12 @@ package com.mmr2410.firstscoutingapp;
 import android.util.JsonReader;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -14,8 +16,10 @@ import java.util.concurrent.ExecutionException;
  */
 public class DataHandling {
 
-    JSONObject jobject;
+    JSONObject jobject,actor;
+    JSONArray jarray;
     JsonReader jreader;
+    ArrayList<String>strings;
     String tag = "FIRST-Scouting";
 
     /**
@@ -24,18 +28,24 @@ public class DataHandling {
      * @param variable
      * @return
      */
-    public String getString(URL url,String variable){
+    public ArrayList<String> getString(URL url,String variable){
         try {
             jobject = new JSONObject(new WIFI().execute(url).get());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(tag,e.toString());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(tag,e.toString());
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            Log.e(tag,e.toString());
         }
+        strings = new ArrayList<String>();
         try {
-            return jobject.getString(variable);
+            jarray = jobject.getJSONArray("data");
+            for(int i = 0; i<jarray.length();i++){
+                actor = jarray.getJSONObject(i); //try jarray.getString();
+                strings.add(actor.getString(variable));
+            }
+            return strings;
         } catch (JSONException e) {
             Log.e(tag, e.toString());
             return null;

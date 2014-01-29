@@ -306,7 +306,6 @@ public class MainActivity extends ActionBarActivity {
             try {
                 newTextView(reader.readLine(),l1);
                 newTextView(reader.readLine(), l1);
-                newTextView(dh.getString("http://www.thefirstalliance.org/api/api.json.php?action=list-teams","data"),l1);
             } catch (IOException e) {
                 Log.e(tag,e.toString());
             }
@@ -314,6 +313,7 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l1);
 
         }
+        newTextView(dh.getString("http://www.thefirstalliance.org/api/api.json.php?action=list-teams","id"),ll);
     }
 
     public void toSendScreen() {
