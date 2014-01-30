@@ -38,6 +38,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -313,7 +314,11 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l1);
 
         }
-        newTextView(dh.getString("http://www.thefirstalliance.org/api/api.json.php?action=list-teams","id"),ll);
+        try {
+            newTextView(dh.getString(new URL("http://www.thefirstalliance.org/api/api.json.php?action=list-teams"),"number").toString(),ll);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void toSendScreen() {

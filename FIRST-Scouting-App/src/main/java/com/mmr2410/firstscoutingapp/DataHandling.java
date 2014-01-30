@@ -21,6 +21,9 @@ public class DataHandling {
     JsonReader jreader;
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
+    String s1;
+
+
 
     /**
      * Get string from a json file and from a specific variable type.
@@ -30,40 +33,41 @@ public class DataHandling {
      */
     public ArrayList<String> getString(URL url,String variable){
         try {
-            jobject = new JSONObject(new WIFI().execute(url).get());
+            jobject = new JSONObject(new WIFI().execute(url).get().toString());
         } catch (JSONException e) {
-            Log.e(tag,e.toString());
+            Log.e(tag,"ERROR CODE 301:  "+e.toString());
         } catch (InterruptedException e) {
-            Log.e(tag,e.toString());
+            Log.e(tag,"ERROR CODE 302:  "+e.toString());
         } catch (ExecutionException e) {
-            Log.e(tag,e.toString());
+            Log.e(tag,"ERROR CODE 303:  "+e.toString());
         }
         strings = new ArrayList<String>();
         try {
+            Log.d(tag,jobject.getJSONArray("data").toString());
             jarray = jobject.getJSONArray("data");
             for(int i = 0; i<jarray.length();i++){
-                actor = jarray.getJSONObject(i); //try jarray.getString();
+                actor = jarray.getJSONObject(i);
                 strings.add(actor.getString(variable));
             }
             return strings;
         } catch (JSONException e) {
-            Log.e(tag, e.toString());
+            Log.e(tag,"ERROR CODE 304:  "+ e.toString());
             return null;
         }
     }
 
-    public String getString(String data,String variable){
-        try {
-            jobject = new JSONObject(data);
-        } catch (JSONException e) {
-            Log.e(tag,e.toString());
-        }
-        try {
-            return jobject.getString(variable);
-        } catch (JSONException e) {
-            Log.e(tag, e.toString());
-            return null;
-        }
-    }
+//    public String getString(String data,String variable){
+//        try {
+//            jobject = new JSONObject(data);
+//        } catch (JSONException e) {
+//            Log.e(tag,e.toString());
+//        }
+//        s1 = "";
+//        for(String s: strings){
+//            s1 += s + ", ";
+//        }
+//
+//        return s1;
+//    }
 
 }

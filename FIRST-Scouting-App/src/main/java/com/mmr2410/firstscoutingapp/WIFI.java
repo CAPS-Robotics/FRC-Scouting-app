@@ -23,13 +23,13 @@ public class WIFI extends AsyncTask<URL, String, String> {
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag,"ERROR CODE 201:  "+e.toString());
         }
         try {
 //            Log.d(tag,reader.readLine());
             return reader.readLine().toString()+"";
         } catch (IOException e) {
-            Log.e(tag,e.toString());
+            Log.e(tag,"ERROR CODE 202:  "+e.toString());
         }
         return null;
     }
