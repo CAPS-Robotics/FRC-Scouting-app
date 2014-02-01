@@ -1,12 +1,16 @@
 package com.mmr2410.firstscoutingapp;
 
 import android.util.JsonReader;
+import android.util.JsonWriter;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +23,7 @@ public class DataHandling {
     JSONObject jobject,actor;
     JSONArray jarray;
     JsonReader jreader;
+    JsonWriter jwriter;
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
     String s1;
@@ -54,6 +59,16 @@ public class DataHandling {
             Log.e(tag,"ERROR CODE 304:  "+ e.toString());
             return null;
         }
+    }
+
+    public void writeJSONtoFile(OutputStream out, ArrayList<String>... aList){
+        try {
+            jwriter = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            Log.e(tag,"ERROR CODE 305:  "+ e.toString());
+        }
+
+        //TODO make method for writing json to files (specifically for match data both server and client side)
     }
 
 //    public String getString(String data,String variable){

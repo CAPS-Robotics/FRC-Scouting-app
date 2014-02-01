@@ -24,6 +24,7 @@ public class WIFI extends AsyncTask<URL, String, String> {
             reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
         } catch (IOException e) {
             Log.e(tag,"ERROR CODE 201:  "+e.toString());
+            Log.e(tag,"You might not have access to the internets");
         }
         try {
 //            Log.d(tag,reader.readLine());

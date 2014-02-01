@@ -27,7 +27,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +37,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -314,11 +312,6 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l1);
 
         }
-        try {
-            newTextView(dh.getString(new URL("http://www.thefirstalliance.org/api/api.json.php?action=list-teams"),"number").toString(),ll);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
     }
 
     public void toSendScreen() {
@@ -377,7 +370,6 @@ public class MainActivity extends ActionBarActivity {
                 devices = new ArrayList<EditText>();
                 try{
                     if(Integer.parseInt(matchNumInput.getText().toString())>50){
-                        Toast.makeText(getApplicationContext(),"Please wait for layout to load...",1000);//TODO this doesn't work yet
                         newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
                     }else{
                         newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
