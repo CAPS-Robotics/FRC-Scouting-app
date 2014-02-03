@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +28,7 @@ public class DataHandling {
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
     String s1;
+    int a=0;
 
 
 
@@ -61,14 +63,42 @@ public class DataHandling {
         }
     }
 
-    public void writeJSONtoFile(OutputStream out, ArrayList<String>... aList){
+    /**
+     * Takes the output stream and writes the arrays to it. var uses the string to make the var and puts aContent into it.
+     * @param out
+     * @param aContent
+     * @param vars
+     */
+    public void writeJSONtoFile(OutputStream out, ArrayList<String> vars,ArrayList<String>... aContent){
         try {
             jwriter = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             Log.e(tag,"ERROR CODE 305:  "+ e.toString());
         }
 
-        //TODO make method for writing json to files (specifically for match data both server and client side)
+        try {
+            jwriter.beginArray();
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 306:  " + e.toString());
+        }
+        for(String s:vars){
+            a = 0;
+            try {
+                jwriter.name(s); //TODO error here
+                for(String s1:aContent[a]){
+                    jwriter.value(s1);
+                }
+            } catch (IOException e) {
+                Log.e(tag,"ERROR CODE 307:  "+ e.toString());
+            }
+            aContent[a].get(a);
+            a++;
+        }
+        try {
+            jwriter.endArray();
+        } catch (IOException e) {
+            Log.e(tag,"ERROR CODE 308:  "+ e.toString());
+        }
     }
 
 //    public String getString(String data,String variable){

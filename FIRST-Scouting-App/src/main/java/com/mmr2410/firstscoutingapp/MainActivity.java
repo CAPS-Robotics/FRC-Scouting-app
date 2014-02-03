@@ -395,32 +395,51 @@ public class MainActivity extends ActionBarActivity {
                 } catch (IOException e) {
                     Log.e(tag,e.toString());
                 }
-//                                }
-                try {
-                    stringBuffer = deviceNumInput.getText().toString() + "\n";
-                    fos.write(stringBuffer.getBytes());
-                    stringBuffer = matchNumInput.getText().toString() + "\n";
-                    fos.write(stringBuffer.getBytes());
-                    for (EditText e : teamNums) {
-                        stringBuffer = e.getText().toString() + " ";
-                        fos.write(stringBuffer.getBytes());
-                        if (e.getId() == 115) {
-                            fos.write(",".getBytes());
-                        }
-                    }
-                    fos.write("\n".getBytes());
-                    for (EditText e : devices) {
-                        stringBuffer = e.getText().toString() + " ";
-                        fos.write(stringBuffer.getBytes());
-                        if (e.getId() == 115) {
-                            fos.write(",".getBytes());
-                        }
-                    }
-                    fos.flush();
-                    fos.close();
-                } catch (Exception e) {
-                    Log.e(tag,e.toString());
+
+                ArrayList<String> vars = new ArrayList<String>();
+                vars.add("info");
+                vars.add("devices");
+
+                ArrayList<String> info = new ArrayList<String>();
+                info.add(deviceNumInput.getText().toString());
+                info.add(matchNumInput.getText().toString());
+
+                ArrayList<String> info1 = new ArrayList<String>();
+                for(EditText e:devices){
+                    info1.add(e.toString());
                 }
+
+                try {
+                    dh.writeJSONtoFile(new FileOutputStream(tempFile),vars,info,info1);
+                } catch (FileNotFoundException e) {
+                    Log.e(tag,"ERROR CODE 110: "+e.toString());
+                }
+
+//                try {
+//                    stringBuffer = deviceNumInput.getText().toString() + "\n";
+//                    fos.write(stringBuffer.getBytes());
+//                    stringBuffer = matchNumInput.getText().toString() + "\n";
+//                    fos.write(stringBuffer.getBytes());
+//                    for (EditText e : teamNums) {
+//                        stringBuffer = e.getText().toString() + " ";
+//                        fos.write(stringBuffer.getBytes());
+//                        if (e.getId() == 115) {
+//                            fos.write(",".getBytes());
+//                        }
+//                    }
+//                    fos.write("\n".getBytes());
+//                    for (EditText e : devices) {
+//                        stringBuffer = e.getText().toString() + " ";
+//                        fos.write(stringBuffer.getBytes());
+//                        if (e.getId() == 115) {
+//                            fos.write(",".getBytes());
+//                        }
+//                    }
+//                    fos.flush();
+//                    fos.close();
+//                } catch (Exception e) {
+//                    Log.e(tag,e.toString());
+//                }
             }
         });
 
