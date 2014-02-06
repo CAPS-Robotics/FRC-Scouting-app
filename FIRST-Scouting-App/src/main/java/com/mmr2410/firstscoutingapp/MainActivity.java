@@ -2,7 +2,6 @@ package com.mmr2410.firstscoutingapp;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -37,7 +36,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -47,8 +45,6 @@ public class MainActivity extends ActionBarActivity {
     Spinner cospinner,mispinner;
     Spinner s1;
     ArrayAdapter<String> communicationOptions;
-    ArrayList<String> matchInfoFiles = new ArrayList<String>();
-    ArrayList<LinearLayout> DeviceOptionLayouts = new ArrayList<LinearLayout>();
     ArrayList<Spinner> DeviceListSpinners;
     ArrayAdapter<String> adapter;
     ArrayList<TextView> connectionStatus;
@@ -60,10 +56,8 @@ public class MainActivity extends ActionBarActivity {
     int lastScreen = 0;
     int currentScreen = R.layout.activity_main;
     BluetoothAdapter bt;
-    BroadcastReceiver br;
     Display display;
     FileOutputStream fos;
-    FileInputStream fis;
     InputStream in;
     BufferedReader reader,reader2;
     Point pointBuffer = new Point();
@@ -78,7 +72,6 @@ public class MainActivity extends ActionBarActivity {
     String fileLocation = "storage/sdcard0/FIRST-Scouting/";
     ListView lv1;
     ProgressBar pb;
-    URL url = null;
     DataHandling dh = new DataHandling();
 
 //    new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get()
@@ -388,6 +381,8 @@ public class MainActivity extends ActionBarActivity {
                 try {
                     tempFile = new File(fileLocation+"schedules",ssFileName.getText().toString());
                     tempFile.createNewFile();
+                    Log.d(tag,fileLocation+"schedules/"+ssFileName.getText().toString());
+                    tempFile = new File(fileLocation+"schedules/"+ssFileName.getText().toString());
                     fos = new FileOutputStream(tempFile);
                 } catch (FileNotFoundException e2) {
                     // TODO Auto-generated catch block
@@ -396,50 +391,33 @@ public class MainActivity extends ActionBarActivity {
                     Log.e(tag,e.toString());
                 }
 
-                ArrayList<String> vars = new ArrayList<String>();
-                vars.add("info");
-                vars.add("devices");
-
                 ArrayList<String> info = new ArrayList<String>();
                 info.add(deviceNumInput.getText().toString());
                 info.add(matchNumInput.getText().toString());
 
-                ArrayList<String> info1 = new ArrayList<String>();
-                for(EditText e:devices){
-                    info1.add(e.toString());
+                dh.beginJSON(fos);
+                dh.writeJSONArray("info", info);
+                dh.newJSONArray("matches");
+                for(int i = 0; i<Integer.parseInt(matchNumInput.getText().toString());i++){
+                    dh.newJSONArray("match"+i);
+                    ArrayList<String> info1 = new ArrayList<String>();
+                    for(EditText e:teamNums){
+                        if(e.getId()==i){
+                            info1.add(e.toString());
+                        }
+                    }
+                    dh.writeJSONArray("TeamNumbers",info1);
+                    info1 = new ArrayList<String>();
+                    for(EditText e:devices){
+                        if(e.getId()==i){
+                            info1.add(e.toString());
+                        }
+                    }
+                    dh.writeJSONArray("Devices", info1);
+                    dh.endJSONArray();
                 }
-
-                try {
-                    dh.writeJSONtoFile(new FileOutputStream(tempFile),vars,info,info1);
-                } catch (FileNotFoundException e) {
-                    Log.e(tag,"ERROR CODE 110: "+e.toString());
-                }
-
-//                try {
-//                    stringBuffer = deviceNumInput.getText().toString() + "\n";
-//                    fos.write(stringBuffer.getBytes());
-//                    stringBuffer = matchNumInput.getText().toString() + "\n";
-//                    fos.write(stringBuffer.getBytes());
-//                    for (EditText e : teamNums) {
-//                        stringBuffer = e.getText().toString() + " ";
-//                        fos.write(stringBuffer.getBytes());
-//                        if (e.getId() == 115) {
-//                            fos.write(",".getBytes());
-//                        }
-//                    }
-//                    fos.write("\n".getBytes());
-//                    for (EditText e : devices) {
-//                        stringBuffer = e.getText().toString() + " ";
-//                        fos.write(stringBuffer.getBytes());
-//                        if (e.getId() == 115) {
-//                            fos.write(",".getBytes());
-//                        }
-//                    }
-//                    fos.flush();
-//                    fos.close();
-//                } catch (Exception e) {
-//                    Log.e(tag,e.toString());
-//                }
+                dh.endJSONArray();
+                dh.endJSON();
             }
         });
 
@@ -603,9 +581,7 @@ public class MainActivity extends ActionBarActivity {
                     e2 = new EditText(this);
                     e2.setInputType(InputType.TYPE_CLASS_NUMBER);
                     e2.setLayoutParams(new LayoutParams(140, LayoutParams.MATCH_PARENT));
-                    if (numTeams == 6) {
-                        e2.setId(115);
-                    }
+                    e2.setId(loopTimes);
                     teamNums.add(e2);
                     l2.addView(e2);
                     componentWidth += 233;
@@ -643,9 +619,7 @@ public class MainActivity extends ActionBarActivity {
                     e2 = new EditText(this);
                     e2.setInputType(InputType.TYPE_CLASS_NUMBER);
                     e2.setLayoutParams(new LayoutParams(140, LayoutParams.MATCH_PARENT));
-                    if (numDevices == 6) {
-                        e2.setId(115);
-                    }
+                    e2.setId(loopTimes);
                     devices.add(e2);
                     l2.addView(e2);
                     componentWidth += 233;

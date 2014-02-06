@@ -27,7 +27,6 @@ public class DataHandling {
     JsonWriter jwriter;
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
-    String s1;
     int a=0;
 
 
@@ -63,56 +62,54 @@ public class DataHandling {
         }
     }
 
-    /**
-     * Takes the output stream and writes the arrays to it. var uses the string to make the var and puts aContent into it.
-     * @param out
-     * @param aContent
-     * @param vars
-     */
-    public void writeJSONtoFile(OutputStream out, ArrayList<String> vars,ArrayList<String>... aContent){
+    public void beginJSON(OutputStream out){
         try {
             jwriter = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
+            jwriter.beginArray();
         } catch (UnsupportedEncodingException e) {
             Log.e(tag,"ERROR CODE 305:  "+ e.toString());
-        }
-
-        try {
-            jwriter.beginArray();
         } catch (IOException e) {
             Log.e(tag, "ERROR CODE 306:  " + e.toString());
         }
-        for(String s:vars){
-            a = 0;
-            try {
-                jwriter.name(s); //TODO error here
-                for(String s1:aContent[a]){
-                    jwriter.value(s1);
-                }
-            } catch (IOException e) {
-                Log.e(tag,"ERROR CODE 307:  "+ e.toString());
-            }
-            aContent[a].get(a);
-            a++;
-        }
+    }
+
+    public void endJSON(){
         try {
             jwriter.endArray();
+            jwriter.close();
+            jwriter.flush();
         } catch (IOException e) {
-            Log.e(tag,"ERROR CODE 308:  "+ e.toString());
+            Log.e(tag, "ERROR CODE 307:  " + e.toString());
         }
     }
 
-//    public String getString(String data,String variable){
-//        try {
-//            jobject = new JSONObject(data);
-//        } catch (JSONException e) {
-//            Log.e(tag,e.toString());
-//        }
-//        s1 = "";
-//        for(String s: strings){
-//            s1 += s + ", ";
-//        }
-//
-//        return s1;
-//    }
+    public void writeJSONArray(String var, ArrayList<String> content){
+        try {
+            jwriter.name(var);
+            jwriter.beginArray();
+            for(String s1: content){
+                jwriter.value(s1);
+            }
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 308:  " + e.toString());
+        }
+    }
+
+    public void newJSONArray(String var){
+        try {
+            jwriter.name(var);
+            jwriter.beginArray();
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 309:  " + e.toString());
+        }
+    }
+
+    public void endJSONArray(){
+        try {
+            jwriter.endArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
