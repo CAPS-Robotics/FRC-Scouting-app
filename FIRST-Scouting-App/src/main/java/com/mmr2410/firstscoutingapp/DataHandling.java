@@ -65,6 +65,7 @@ public class DataHandling {
     public void beginJSON(OutputStream out){
         try {
             jwriter = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
+            jwriter.setIndent(" ");
             jwriter.beginArray();
         } catch (UnsupportedEncodingException e) {
             Log.e(tag,"ERROR CODE 305:  "+ e.toString());
@@ -90,8 +91,25 @@ public class DataHandling {
             for(String s1: content){
                 jwriter.value(s1);
             }
+            jwriter.endArray();
         } catch (IOException e) {
             Log.e(tag, "ERROR CODE 308:  " + e.toString());
+        }
+    }
+
+    public void writeJSONObject(String var, ArrayList<String> content){
+        try {
+            jwriter.name(var);
+            jwriter.beginArray();
+            jwriter.name("content");
+            jwriter.beginArray();
+            for(String s1: content){
+                jwriter.value(s1);
+            }
+            jwriter.endArray();
+            jwriter.endArray();
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 309:  " + e.toString());
         }
     }
 
@@ -100,7 +118,7 @@ public class DataHandling {
             jwriter.name(var);
             jwriter.beginArray();
         } catch (IOException e) {
-            Log.e(tag, "ERROR CODE 309:  " + e.toString());
+            Log.e(tag, "ERROR CODE 310:  " + e.toString());
         }
     }
 
@@ -108,8 +126,23 @@ public class DataHandling {
         try {
             jwriter.endArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(tag, "ERROR CODE 311:  " + e.toString());
         }
     }
 
+    public void newJSONObject(){
+        try {
+            jwriter.beginObject();
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 312:  " + e.toString());
+        }
+    }
+
+    public void endJSONObject(){
+        try {
+            jwriter.endObject();
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 313:  " + e.toString());
+        }
+    }
 }

@@ -64,8 +64,7 @@ public class MainActivity extends ActionBarActivity {
     LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
     TextView t1, t2, t3, t4, t5, t6, t7;
     EditText e1, e2, matchNumInput, deviceNumInput, ssFileName;
-    ArrayList<EditText> teamNums;
-    ArrayList<EditText> devices;
+    ArrayList<EditText> teamNums, devices, times;
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
     String tag = "FIRST-Scouting";
@@ -361,6 +360,7 @@ public class MainActivity extends ActionBarActivity {
                 ssGenerated.removeAllViews();
                 teamNums = new ArrayList<EditText>();
                 devices = new ArrayList<EditText>();
+                times = new ArrayList<EditText>();
                 try{
                     if(Integer.parseInt(matchNumInput.getText().toString())>50){
                         newMatch(1, Integer.parseInt(matchNumInput.getText().toString()), ssGenerated);
@@ -396,27 +396,34 @@ public class MainActivity extends ActionBarActivity {
                 info.add(matchNumInput.getText().toString());
 
                 dh.beginJSON(fos);
+                dh.newJSONObject();
                 dh.writeJSONArray("info", info);
-                dh.newJSONArray("matches");
-                for(int i = 0; i<Integer.parseInt(matchNumInput.getText().toString());i++){
-                    dh.newJSONArray("match"+i);
-                    ArrayList<String> info1 = new ArrayList<String>();
+                for(int i = 1; i<=Integer.parseInt(matchNumInput.getText().toString());i++){
+                    info = new ArrayList<String>();
                     for(EditText e:teamNums){
                         if(e.getId()==i){
-                            info1.add(e.toString());
+                            info.add(e.getText().toString());
                         }
                     }
-                    dh.writeJSONArray("TeamNumbers",info1);
-                    info1 = new ArrayList<String>();
+                    dh.writeJSONArray("match"+i,info);
+
+                    info = new ArrayList<String>();
                     for(EditText e:devices){
                         if(e.getId()==i){
-                            info1.add(e.toString());
+                            info.add(e.getText().toString());
                         }
                     }
-                    dh.writeJSONArray("Devices", info1);
-                    dh.endJSONArray();
+                    dh.writeJSONArray("devices"+i, info);
+
+                    info = new ArrayList<String>();
+                    for(EditText e:times){
+                        if(e.getId()==i){
+                            info.add(e.getText().toString());
+                        }
+                    }
+                    dh.writeJSONArray("times" + i, info);
                 }
-                dh.endJSONArray();
+                dh.endJSONObject();
                 dh.endJSON();
             }
         });
@@ -556,8 +563,10 @@ public class MainActivity extends ActionBarActivity {
             t4.setText("Time:");
             l1.addView(t4);
             e1 = new EditText(this);
-            e1.setInputType(InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_TIME);  //this is special...
+            e1.setInputType(InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_TIME);
             e1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            e1.setId(loopTimes);
+            times.add(e1);
             l1.addView(e1);
             l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
             ll.addView(l1);
@@ -623,6 +632,7 @@ public class MainActivity extends ActionBarActivity {
                     devices.add(e2);
                     l2.addView(e2);
                     componentWidth += 233;
+                    numDevices++;
                 } else {
                     componentWidth = 0;
                     ll.addView(l2);
@@ -630,7 +640,6 @@ public class MainActivity extends ActionBarActivity {
                     l2.setOrientation(LinearLayout.HORIZONTAL);
                     l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
                 }
-                numDevices++;
             }
             ll.addView(l2);
             l2 = new LinearLayout(this);
