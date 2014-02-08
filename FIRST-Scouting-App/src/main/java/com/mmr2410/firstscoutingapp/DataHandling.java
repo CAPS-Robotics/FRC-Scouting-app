@@ -8,7 +8,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -21,7 +23,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class DataHandling {
 
-    JSONObject jobject,actor;
+    JSONObject jobject,jobject2,actor;
     JSONArray jarray;
     JsonReader jreader;
     JsonWriter jwriter;
@@ -65,8 +67,7 @@ public class DataHandling {
     public void beginJSON(OutputStream out){
         try {
             jwriter = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
-            jwriter.setIndent(" ");
-            jwriter.beginArray();
+            jwriter.beginObject();
         } catch (UnsupportedEncodingException e) {
             Log.e(tag,"ERROR CODE 305:  "+ e.toString());
         } catch (IOException e) {
@@ -76,7 +77,7 @@ public class DataHandling {
 
     public void endJSON(){
         try {
-            jwriter.endArray();
+            jwriter.endObject();
             jwriter.close();
             jwriter.flush();
         } catch (IOException e) {
@@ -144,5 +145,44 @@ public class DataHandling {
         } catch (IOException e) {
             Log.e(tag, "ERROR CODE 313:  " + e.toString());
         }
+    }
+
+    public void newJSONName(String var,String content){
+        try {
+            jwriter.name(var).value(content);
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 314:  " + e.toString());
+        }
+    }
+
+    public void newJSONName(String var,int content){
+        try {
+            jwriter.name(var).value(content);
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 315:  " + e.toString());
+        }
+    }
+
+    public String getJSONStringFromMatch(BufferedReader reader, int matchNum, String var){
+        try {
+            jobject = new JSONObject(reader.readLine());
+            Log.d(tag,jobject.toString());
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 316:  " + e.toString());
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 317:  " + e.toString());
+        }
+        try {
+            jarray = jobject.getJSONArray("data");
+            jobject2 = jarray.getJSONObject(matchNum);
+            return jobject2.getString(var);
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 318:  " + e.toString());
+        }
+        return null;
+    }
+
+    public ArrayList<String> getJSONArray(InputStream in, String var){
+        return null;
     }
 }

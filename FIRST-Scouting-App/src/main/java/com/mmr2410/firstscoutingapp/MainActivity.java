@@ -138,6 +138,18 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toHostScreen() {
+        try {
+            in = new FileInputStream(fileLocation+"schedules/"+ "day1");
+            reader = new BufferedReader(new InputStreamReader(in));
+        } catch (Exception e) {
+            Log.e(tag, e.toString());
+        }
+        try{
+            Log.d(tag,dh.getJSONStringFromMatch(reader,1,"number"));
+        }catch(Exception e){
+            Log.e(tag,e.toString());
+        }
+
         DeviceListSpinners = new ArrayList<Spinner>();
         scheduledFiles = new ArrayList<String>();
         btDevices = new ArrayList<String>();
@@ -178,7 +190,6 @@ public class MainActivity extends ActionBarActivity {
                 try {
                     in = new FileInputStream(fileLocation+"schedules/"+ arg0.getSelectedItem().toString());
                     reader = new BufferedReader(new InputStreamReader(in));
-                    stringBuffer = reader.readLine();
                 } catch (Exception e) {
                     Log.e(tag, e.toString());
                 }
@@ -352,6 +363,7 @@ public class MainActivity extends ActionBarActivity {
         ssGenerated = (LinearLayout) findViewById(R.id.ssGenerated);
         ssSaveB = (Button) findViewById(R.id.ssb);
         ssFileName = (EditText) findViewById(R.id.ssFileName);
+        deviceNumInput = (EditText)findViewById(R.id.DeviceNumInput);
         matchNumInput = (EditText) findViewById(R.id.MatchesInput);
         matchNumInput.setOnKeyListener(new OnKeyListener() {
 
@@ -372,59 +384,16 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        deviceNumInput = (EditText) findViewById(R.id.DeviceNumInputInput);
+        deviceNumInput = (EditText) findViewById(R.id.DeviceNumInput);
 
         ssSaveB.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                try {
-                    tempFile = new File(fileLocation+"schedules",ssFileName.getText().toString());
-                    tempFile.createNewFile();
-                    Log.d(tag,fileLocation+"schedules/"+ssFileName.getText().toString());
-                    tempFile = new File(fileLocation+"schedules/"+ssFileName.getText().toString());
-                    fos = new FileOutputStream(tempFile);
-                } catch (FileNotFoundException e2) {
-                    // TODO Auto-generated catch block
-                    Log.e(tag, e2.toString());
-                } catch (IOException e) {
-                    Log.e(tag,e.toString());
-                }
 
-                ArrayList<String> info = new ArrayList<String>();
-                info.add(deviceNumInput.getText().toString());
-                info.add(matchNumInput.getText().toString());
+                newScheduleFile(fileLocation+"schedules/"+ssFileName.getText().toString(),Integer.parseInt(matchNumInput.getText().toString()),Integer.parseInt(deviceNumInput.getText().toString()),teamNums,devices,times);
 
-                dh.beginJSON(fos);
-                dh.newJSONObject();
-                dh.writeJSONArray("info", info);
-                for(int i = 1; i<=Integer.parseInt(matchNumInput.getText().toString());i++){
-                    info = new ArrayList<String>();
-                    for(EditText e:teamNums){
-                        if(e.getId()==i){
-                            info.add(e.getText().toString());
-                        }
-                    }
-                    dh.writeJSONArray("match"+i,info);
-
-                    info = new ArrayList<String>();
-                    for(EditText e:devices){
-                        if(e.getId()==i){
-                            info.add(e.getText().toString());
-                        }
-                    }
-                    dh.writeJSONArray("devices"+i, info);
-
-                    info = new ArrayList<String>();
-                    for(EditText e:times){
-                        if(e.getId()==i){
-                            info.add(e.getText().toString());
-                        }
-                    }
-                    dh.writeJSONArray("times" + i, info);
-                }
-                dh.endJSONObject();
-                dh.endJSON();
+                toHostScreen();
             }
         });
 
@@ -536,7 +505,7 @@ public class MainActivity extends ActionBarActivity {
      * Adds a section used for imputing a match. Uses matchNum to display the match number and ll is the linear layout used to add the components to.
      */
     void newMatch(int matchNum, int numOfMatches, LinearLayout ll) {
-        loopTimes = 1;
+        loopTimes = matchNum;
         while (loopTimes < numOfMatches + 1) {
             display = getWindowManager().getDefaultDisplay();
             display.getSize(pointBuffer);
@@ -554,6 +523,7 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(t1);
             t2 = new TextView(this);
             t2.setText("Match " + loopTimes + ":");
+            t2.setTextColor(Color.WHITE);
             l1.addView(t2);
             t3 = new TextView(this);
             t3.setText("");
@@ -572,15 +542,17 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l1);
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
-            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
+            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 50));
             t5 = new TextView(this);
+            t5.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
             t5.setText("Teams: ");
+            t5.setTextColor(Color.WHITE);
             l2.addView(t5);
-            t6 = new TextView(this);
-            t6.setText("");
-            t6.setLayoutParams(new LayoutParams(pointBuffer.x / 10, 1));
-            l2.addView(t6);
-            componentWidth = (pointBuffer.x / 10) + 106; //106 is the width of the "Teams: " text
+            ll.addView(l2);
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
+            componentWidth = 0;
             numTeams = 1;
             while (numTeams <= 6) {
                 if (componentWidth + 233 <= pointBuffer.x) {// each team + text space = 233
@@ -608,17 +580,22 @@ public class MainActivity extends ActionBarActivity {
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 5));
             t1.setBackgroundColor(Color.BLUE);
             ll.addView(t1);
+            t1 = new TextView(this);
+            t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 20));
+            ll.addView(t1);
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 50));
+            t5 = new TextView(this);
+            t5.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
+            t5.setText("Devices: ");
+            t5.setTextColor(Color.WHITE);
+            l2.addView(t5);
+            ll.addView(l2);
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
             l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
-            t5 = new TextView(this);
-            t5.setText("Devices: ");
-            l2.addView(t5);
-            t6 = new TextView(this);
-            t6.setText("");
-            t6.setLayoutParams(new LayoutParams(pointBuffer.x / 10, 1));
-            l2.addView(t6);
-            componentWidth = (pointBuffer.x / 10) + 120;
+            componentWidth = 0;
             numDevices = 1;
             while (numDevices <= 6) {
                 if (componentWidth + 233 <= pointBuffer.x) {// each team + text space = 233
@@ -644,15 +621,7 @@ public class MainActivity extends ActionBarActivity {
             ll.addView(l2);
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
-            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
-            t5 = new TextView(this);
-            t5.setText("Score Keeper: ");
-            l2.addView(t5);
-            e2 = new EditText(this);
-            e2.setInputType(InputType.TYPE_CLASS_NUMBER);
-            e2.setLayoutParams(new LayoutParams(140, LayoutParams.MATCH_PARENT));
-            devices.add(e2);
-            l2.addView(e2);
+            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 20));
             ll.addView(l2);
             loopTimes++;
         }
@@ -671,5 +640,64 @@ public class MainActivity extends ActionBarActivity {
         t1.setBackgroundColor(color);
         t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,height));
         ll.addView(t1);
+    }
+
+    public void newScheduleFile(String fileLocation1, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<EditText> deviceNums, ArrayList<EditText> times){
+        try {
+            tempFile = new File(fileLocation1);
+            tempFile.createNewFile();
+            fos = new FileOutputStream(tempFile);
+        } catch (FileNotFoundException e2) {
+            Log.e(tag, e2.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+
+        dh.beginJSON(fos);
+        dh.newJSONArray("data");
+
+        dh.newJSONObject();
+        dh.newJSONName("matches", numMatches);
+        dh.newJSONName("devices",numDevices);
+        dh.endJSONObject();
+
+        ArrayList<String> info = new ArrayList<String>();
+        info.add(deviceNumInput.getText().toString());
+        info.add(matchNumInput.getText().toString());
+
+        for(int i = 1; i<=numMatches;i++){
+            dh.newJSONObject();
+            dh.newJSONName("number",i);
+
+            info = new ArrayList<String>();
+            for(EditText e:teamNums){
+                if(e.getId()==i){
+                    info.add(e.getText().toString());
+                }
+            }
+            dh.writeJSONArray("teams",info);
+
+            info = new ArrayList<String>();
+            for(EditText e:deviceNums){
+                if(e.getId()==i){
+                    info.add(e.getText().toString());
+                }
+            }
+
+            dh.writeJSONArray("devices", info);
+
+            info = new ArrayList<String>();
+            for(EditText e:times){
+                if(e.getId()==i){
+                    info.add(e.getText().toString());
+                }
+            }
+
+            dh.writeJSONArray("time", info);
+
+            dh.endJSONObject();
+        }
+        dh.endJSONArray();
+        dh.endJSON();
     }
 }
