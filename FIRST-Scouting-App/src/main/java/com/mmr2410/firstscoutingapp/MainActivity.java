@@ -194,9 +194,9 @@ public class MainActivity extends ActionBarActivity {
                     Log.e(tag, e.toString());
                 }
                 try{
-                    numDevices = Integer.parseInt(stringBuffer);
+                    numDevices = Integer.parseInt(dh.getJSONStringFromMatch(reader,0,"devices"));
                 }catch(Exception e){
-                    Log.e(tag,"Error parsing file. Unrecognized file format?");
+                    Log.e(tag,"Not able to get number of matches. File not JSON?");
                 }
                 adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, btDevices);
                 DeviceListSpinners = new ArrayList<Spinner>();
@@ -249,25 +249,35 @@ public class MainActivity extends ActionBarActivity {
                 }catch(Exception e){
                     Log.e(tag,"unable to find or create temp file");
                 }
+
                 try {
                     fos = new FileOutputStream(tempFile);
-                    Log.d(tag,"output stream created");
-                    s1 = (Spinner)findViewById(R.id.scheduleSpinner);
-                    fos.write(s1.getSelectedItem().toString().getBytes());
-                    fos.write("\n".getBytes());
-                    for(Spinner s:DeviceListSpinners){
-                        fos.write(s.getSelectedItem().toString().getBytes());
-                        fos.write("\n".getBytes());
-                    }
-                    Log.d(tag,"wrote to host temp file");
-                    Log.d(tag, "flushing and closing output stream");
-                    fos.flush();
-                    fos.close();
                 } catch (FileNotFoundException e) {
-                    Log.e(tag,e.toString());
-                } catch (IOException e1) {
-                    Log.e(tag,e1.toString());
+                    Log.e(tag, e.toString());
                 }
+
+                ArrayList<String> info = new ArrayList<String>();
+
+                dh.beginJSON(fos);
+                dh.newJSONArray("data");
+
+                dh.newJSONObject();
+
+                int i = 0;
+                for(Spinner s: DeviceListSpinners){
+                    info.add(s.getSelectedItem().toString());
+                    i++;
+                }
+
+                dh.newJSONName("schedule",s1.getSelectedItem().toString());
+                dh.newJSONName("number",i);
+                dh.newJSONName("devices", info);
+
+                dh.endJSONObject();
+
+                dh.endJSONArray();
+                dh.endJSON();
+
                 toHostMonitor();
             }
         });
@@ -404,51 +414,29 @@ public class MainActivity extends ActionBarActivity {
         bt = BluetoothAdapter.getDefaultAdapter();
         connectionStatus = new ArrayList<TextView>();
 
-
-        // need to try sending data to devices to see if they are connected
-
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
 
-        t1 = new TextView(this);
         try {
-            t1.setText(reader.readLine().toString());
-        } catch (IOException e) {
+            in = new FileInputStream(getCacheDir().getAbsolutePath()+"hostInfo");
+        } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         }
-        files = new ArrayList<String>();//TODO
-        try{
-            tempFile = new File(getCacheDir().getAbsolutePath()+"hostInfo");
-        }catch(Exception e){Log.e(tag,e.toString());}
+        reader = new BufferedReader(new InputStreamReader(in));
 
         try {
-            reader = new BufferedReader(new FileReader(tempFile));
-            reader2 = new BufferedReader(new FileReader(tempFile));
-            Log.d(tag,"made buffered readers");
             t1 = new TextView(this);
-            t1.setText(reader.readLine().toString());
+            t1.setText(dh.getJSONStringFromTempFile(reader, "schedule"));
             t1.setTextSize(20);
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             t1.setGravity(Gravity.CENTER);
             ll.addView(t1);
-        } catch (FileNotFoundException e) {
-            Log.e(tag,e.toString());
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(tag,e.toString());
         }
 
-        files = new ArrayList<String>();
-        btDeviceNames = new ArrayList<String>();
-        try{
-            reader2.readLine();
-            while(reader2.readLine()!=null){
-                btDeviceNames.add(reader.readLine().toString());
-            }
-        }catch(Exception e){Log.e(tag,e.toString());}
-        listBuffer = new ArrayList<String>();
-        for(int i = 1;i<=btDeviceNames.size();i++){
-            listBuffer.add(Integer.toString(i));
-        }
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, listBuffer);
+        btDeviceNames = dh.getJSONArrayFromTempFile(reader,"devices");
+
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, btDeviceNames);
 
         t1 = new TextView(this);
         t1.setLayoutParams(new LayoutParams(1, 10));
