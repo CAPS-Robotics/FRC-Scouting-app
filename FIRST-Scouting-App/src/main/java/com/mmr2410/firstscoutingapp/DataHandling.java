@@ -8,7 +8,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -190,7 +195,7 @@ public class DataHandling {
         return null;
     }
 
-    public String getJSONStringFromTempFile(BufferedReader reader, String var){
+    public ArrayList<String> getJSONArrayFromMatch(BufferedReader reader, int matchNum, String var){
         try {
             jobject = new JSONObject(reader.readLine());
         } catch (IOException e) {
@@ -200,27 +205,9 @@ public class DataHandling {
         }
         try {
             jarray = jobject.getJSONArray("data");
-            jobject2 = jarray.getJSONObject(0);
-            return jobject2.getString(var);
-        } catch (JSONException e) {
-            Log.e(tag, "ERROR CODE 318:  " + e.toString());
-        }
-        return null;
-    }
-
-    public ArrayList<String> getJSONArrayFromTempFile(BufferedReader reader, String var){
-        try {
-            jobject = new JSONObject(reader.readLine());
-        } catch (IOException e) {
-            Log.e(tag, "ERROR CODE 316:  " + e.toString());
-        } catch (JSONException e) {
-            Log.e(tag, "ERROR CODE 317:  " + e.toString());
-        }
-        try {
-            jarray = jobject.getJSONArray("data");
-            jobject2 = jarray.getJSONObject(0);
-            ArrayList<String> info = new ArrayList<String>();
+            jobject2 = jarray.getJSONObject(matchNum);
             jarray = jobject2.getJSONArray(var);
+            ArrayList<String> info = new ArrayList<String>();
             for(int i = 0;i<jarray.length();i++){
                 info.add(jarray.get(i).toString());
             }
@@ -229,5 +216,90 @@ public class DataHandling {
             Log.e(tag, "ERROR CODE 318:  " + e.toString());
         }
         return null;
+    }
+
+    public void updateJSONString(String fileLocation, int matchNum, String var, String content){
+        FileInputStream in = null;
+        BufferedReader reader;
+        File f = new File(fileLocation);
+        FileOutputStream out = null;
+        try {
+            in = new FileInputStream(fileLocation);
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        }
+        reader = new BufferedReader(new InputStreamReader(in));
+
+        try {
+            f.createNewFile();
+            out = new FileOutputStream(f);
+        } catch (FileNotFoundException e2) {
+            Log.e(tag, e2.toString());
+        } catch (IOException e) {
+            Log.e(tag, e.toString());
+        }
+
+        try {
+            jobject = new JSONObject(reader.readLine());
+            jarray = jobject.getJSONArray("data");
+            jobject2 = jarray.getJSONObject(matchNum);
+            jobject2.put(var, content);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            out.write(jobject.toString().getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateJSONArray(String fileLocation, int matchNum, String var, ArrayList<String> content){
+        FileInputStream in = null;
+        BufferedReader reader;
+        File f = new File(fileLocation);
+        FileOutputStream out = null;
+        try {
+            in = new FileInputStream(fileLocation);
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        }
+        reader = new BufferedReader(new InputStreamReader(in));
+
+        JSONArray jarray2 = new JSONArray();
+        for(String s:content){
+            jarray2.put(s);
+        }
+
+        try {
+            jobject = new JSONObject(reader.readLine());
+            jarray = jobject.getJSONArray("data");
+            jobject2 = jarray.getJSONObject(matchNum);
+            jobject2.put(var,jarray2);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            f.createNewFile();
+            out = new FileOutputStream(f);
+        } catch (FileNotFoundException e2) {
+            Log.e(tag, e2.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+
+
+        try {
+            out.write(jobject.toString().getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

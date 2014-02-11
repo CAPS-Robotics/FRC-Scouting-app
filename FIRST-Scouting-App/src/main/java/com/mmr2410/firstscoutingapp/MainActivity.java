@@ -138,13 +138,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toHostScreen() {
-        try {
-            in = new FileInputStream(fileLocation+"schedules/"+ "day1");
-            reader = new BufferedReader(new InputStreamReader(in));
-        } catch (Exception e) {
-            Log.e(tag, e.toString());
-        }
-
         DeviceListSpinners = new ArrayList<Spinner>();
         scheduledFiles = new ArrayList<String>();
         btDevices = new ArrayList<String>();
@@ -232,51 +225,13 @@ public class MainActivity extends ActionBarActivity {
         hostStartB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try{
-                    //makes file for host settings.
-                    tempFile = new File(getCacheDir().getAbsolutePath()+"hostInfo");
-                    if(tempFile.mkdirs()){
-                        tempFile.createNewFile();
-                        Log.d(tag,"made temp file");
-                    }else{
-                        Log.d(tag,"found temp host file in cache directory");
-                    }
-                }catch(Exception e){
-                    Log.e(tag,"unable to find or create temp file");
-                }
-
-                try {
-                    fos = new FileOutputStream(tempFile);
-                } catch (FileNotFoundException e) {
-                    Log.e(tag, e.toString());
-                }
-
                 ArrayList<String> info = new ArrayList<String>();
-
-                dh.beginJSON(fos);
-                dh.newJSONArray("data");
-
-                dh.newJSONObject();
-
-                int i = 0;
-                for(Spinner s: DeviceListSpinners){
+                for(Spinner s:DeviceListSpinners){
                     info.add(s.getSelectedItem().toString());
-                    i++;
                 }
-
                 s1 = (Spinner)findViewById(R.id.scheduleSpinner);
-
-                dh.newJSONName("schedule",s1.getSelectedItem().toString());
-                dh.newJSONName("number",i);
-                dh.newJSONName("devices", info);
-
-                dh.endJSONObject();
-
-                dh.endJSONArray();
-                dh.endJSON();
-                Log.d(tag,"done making host temp file");
-
-                toHostMonitor();
+                dh.updateJSONArray(fileLocation+"schedules/"+ s1.getSelectedItem().toString(),0,"assigneddevices",info);
+                toHostMonitor(s1.getSelectedItem().toString());
             }
         });
     }
@@ -399,7 +354,7 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public void toHostMonitor(){
+    public void toHostMonitor(String fileName){
         setContentView(R.layout.host_monitor);
         bt = BluetoothAdapter.getDefaultAdapter();
         connectionStatus = new ArrayList<TextView>();
@@ -407,7 +362,7 @@ public class MainActivity extends ActionBarActivity {
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
 
         try {
-            in = new FileInputStream(getCacheDir().getAbsolutePath()+"hostInfo");
+            in = new FileInputStream(fileLocation+"schedules/"+fileName);
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         }
@@ -415,7 +370,7 @@ public class MainActivity extends ActionBarActivity {
 
         try {
             t1 = new TextView(this);
-            t1.setText(dh.getJSONStringFromTempFile(reader, "schedule"));
+            t1.setText(dh.getJSONStringFromMatch(reader, 0, "schedule"));
             t1.setTextSize(20);
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             t1.setGravity(Gravity.CENTER);
@@ -425,13 +380,14 @@ public class MainActivity extends ActionBarActivity {
         }
 
         try {
-            in = new FileInputStream(getCacheDir().getAbsolutePath()+"hostInfo");
+            in = new FileInputStream(fileLocation+"schedules/"+fileName);
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         }
         reader = new BufferedReader(new InputStreamReader(in));
 
-        btDeviceNames = dh.getJSONArrayFromTempFile(reader,"devices");
+        btDeviceNames = dh.getJSONArrayFromMatch(reader, 0, "assigneddevices");
+        Log.d(tag,btDeviceNames.toString());
 
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, btDeviceNames);
 
@@ -484,12 +440,8 @@ public class MainActivity extends ActionBarActivity {
         b1.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                for(int i = 1; i<=btDeviceNames.size();i++){
-                    if(btDeviceNames.get(i).equals("<This Device>")){
-
-                    }
-                }
+                Log.d(tag,"you clicked me...");
+                //TODO change file to include the device number assigned
             }
         });
 
@@ -662,6 +614,10 @@ public class MainActivity extends ActionBarActivity {
         dh.newJSONObject();
         dh.newJSONName("matches", numMatches);
         dh.newJSONName("devices",numDevices);
+        dh.newJSONName("competition",""); //TODO make field for competition name
+        dh.newJSONName("challenge",""); //TODO make field for challenge type
+        dh.newJSONName("host",bt.getAddress());
+        dh.newJSONName("devicenum","");
         dh.writeJSONArray("assigneddevices",deviceNames); //TODO Add more info to schedule file so that it can be sent to clients
         //time and date, place,teams, type of match, who is host, device number
         dh.endJSONObject();
@@ -699,6 +655,10 @@ public class MainActivity extends ActionBarActivity {
             }
 
             dh.writeJSONArray("time", info);
+
+            info = new ArrayList<String>(); //TODO add dates
+
+            dh.writeJSONArray("date", info);
 
             dh.endJSONObject();
         }
