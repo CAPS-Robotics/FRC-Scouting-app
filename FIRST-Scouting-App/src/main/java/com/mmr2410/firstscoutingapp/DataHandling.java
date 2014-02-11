@@ -1,6 +1,5 @@
 package com.mmr2410.firstscoutingapp;
 
-import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
@@ -24,7 +23,6 @@ public class DataHandling {
 
     JSONObject jobject,jobject2,actor;
     JSONArray jarray;
-    JsonReader jreader;
     JsonWriter jwriter;
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
@@ -50,7 +48,6 @@ public class DataHandling {
         }
         strings = new ArrayList<String>();
         try {
-            Log.d(tag,jobject.getJSONArray("data").toString());
             jarray = jobject.getJSONArray("data");
             for(int i = 0; i<jarray.length();i++){
                 actor = jarray.getJSONObject(i);
@@ -77,8 +74,8 @@ public class DataHandling {
     public void endJSON(){
         try {
             jwriter.endObject();
-            jwriter.close();
             jwriter.flush();
+            jwriter.close();
         } catch (IOException e) {
             Log.e(tag, "ERROR CODE 307:  " + e.toString());
         }
@@ -213,7 +210,7 @@ public class DataHandling {
 
     public ArrayList<String> getJSONArrayFromTempFile(BufferedReader reader, String var){
         try {
-            jobject = new JSONObject(reader.readLine()); //TODO Null pointer exception here
+            jobject = new JSONObject(reader.readLine());
         } catch (IOException e) {
             Log.e(tag, "ERROR CODE 316:  " + e.toString());
         } catch (JSONException e) {
