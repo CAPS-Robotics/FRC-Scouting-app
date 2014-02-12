@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,7 +43,7 @@ import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
     Button hostB, clientB,sendB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
-    Spinner cospinner,mispinner;
+    Spinner cospinner,mispinner,challengeSelector;
     Spinner s1;
     ArrayAdapter<String> communicationOptions;
     ArrayList<Spinner> DeviceListSpinners;
@@ -63,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
     Point pointBuffer = new Point();
     LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
     TextView t1, t2, t3, t4, t5, t6, t7;
-    EditText e1, e2, matchNumInput, deviceNumInput, ssFileName;
+    EditText e1, e2, matchNumInput, deviceNumInput, ssFileName,competitionInput;
     ArrayList<EditText> teamNums, devices, times;
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
@@ -293,21 +294,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toSettingsScreen() {
-        lastScreen = currentScreen;
-        setContentView(R.layout.settings_screen);
-        currentScreen = R.layout.settings_screen;
-        cospinner = (Spinner) findViewById(R.id.scheduleSpinner);
-        files = new ArrayList<String>();
-        communicationOptions = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, android.R.layout.simple_spinner_item);
-        cospinner.setAdapter(communicationOptions);
-        mispinner = (Spinner) findViewById(R.id.matchInfoSpinner);
-
-        for (File file : tempFile.listFiles()) {
-            files.add(file.getName());
-        }
-
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, files);
-        mispinner.setAdapter(adapter);
+        Log.d(tag,"someone tried to go to settings, what they don't know is that it isn't done yet!! XD");
+//        setContentView(R.layout.settings_screen);
     }
 
     public void toScheduleSetupScreen() {
@@ -318,7 +306,18 @@ public class MainActivity extends ActionBarActivity {
         ssGenerated = (LinearLayout) findViewById(R.id.ssGenerated);
         ssSaveB = (Button) findViewById(R.id.ssb);
         ssFileName = (EditText) findViewById(R.id.ssFileName);
+        competitionInput = (EditText)findViewById(R.id.competitionInput);
         deviceNumInput = (EditText)findViewById(R.id.DeviceNumInput);
+
+        challengeSelector = (Spinner)findViewById(R.id.challengeSpinner);
+
+        ArrayList<String> challengeOptions = new ArrayList<String>();
+        challengeOptions.add("Aerial Assist");
+
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, challengeOptions);
+
+        challengeSelector.setAdapter(adapter);
+
         matchNumInput = (EditText) findViewById(R.id.MatchesInput);
         matchNumInput.setOnKeyListener(new OnKeyListener() {
 
@@ -346,9 +345,14 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-                newScheduleFile(fileLocation+"schedules/"+ssFileName.getText().toString(),Integer.parseInt(matchNumInput.getText().toString()),Integer.parseInt(deviceNumInput.getText().toString()),teamNums,devices,times);
+                if(newScheduleFile(ssFileName.getText().toString(),Integer.parseInt(matchNumInput.getText().toString()),Integer.parseInt(deviceNumInput.getText().toString()),teamNums,devices,times)){
 
-                toHostScreen();
+                    toHostScreen();
+                }else{
+                    Toast toast = Toast.makeText(getApplicationContext(), "Enter a valid schedule name", Toast.LENGTH_SHORT);
+                    toast.show();
+                } //TODO improve on error check
+
             }
         });
 
@@ -592,9 +596,10 @@ public class MainActivity extends ActionBarActivity {
         ll.addView(t1);
     }
 
-    public void newScheduleFile(String fileLocation1, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<EditText> deviceNums, ArrayList<EditText> times){
-        try {
-            tempFile = new File(fileLocation1);
+    public boolean newScheduleFile(String fileName, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<EditText> deviceNums, ArrayList<EditText> times){
+        if(fileName != null){
+            try {
+            tempFile = new File(fileLocation+"schedules/"+fileName);
             tempFile.createNewFile();
             fos = new FileOutputStream(tempFile);
         } catch (FileNotFoundException e2) {
@@ -603,67 +608,73 @@ public class MainActivity extends ActionBarActivity {
             Log.e(tag,e.toString());
         }
 
-        ArrayList<String> deviceNames = new ArrayList<String>();
-        for(int i = 0; i<numDevices;i++){
-            deviceNames.add("<None>");
-        }
+            ArrayList<String> deviceNames = new ArrayList<String>();
+            for(int i = 0; i<numDevices;i++){
+                deviceNames.add("<None>");
+            }
 
-        dh.beginJSON(fos);
-        dh.newJSONArray("data");
+            dh.beginJSON(fos);
+            dh.newJSONArray("data");
 
-        dh.newJSONObject();
-        dh.newJSONName("matches", numMatches);
-        dh.newJSONName("devices",numDevices);
-        dh.newJSONName("competition",""); //TODO make field for competition name
-        dh.newJSONName("challenge",""); //TODO make field for challenge type
-        dh.newJSONName("host",bt.getAddress());
-        dh.newJSONName("devicenum","");
-        dh.writeJSONArray("assigneddevices",deviceNames); //TODO Add more info to schedule file so that it can be sent to clients
-        //time and date, place,teams, type of match, who is host, device number
-        dh.endJSONObject();
-
-        ArrayList<String> info = new ArrayList<String>();
-        info.add(deviceNumInput.getText().toString());
-        info.add(matchNumInput.getText().toString());
-
-        for(int i = 1; i<=numMatches;i++){
             dh.newJSONObject();
-            dh.newJSONName("number",i);
-
-            info = new ArrayList<String>();
-            for(EditText e:teamNums){
-                if(e.getId()==i){
-                    info.add(e.getText().toString());
-                }
-            }
-            dh.writeJSONArray("teams",info);
-
-            info = new ArrayList<String>();
-            for(EditText e:deviceNums){
-                if(e.getId()==i){
-                    info.add(e.getText().toString());
-                }
-            }
-
-            dh.writeJSONArray("devices", info);
-
-            info = new ArrayList<String>();
-            for(EditText e:times){
-                if(e.getId()==i){
-                    info.add(e.getText().toString());
-                }
-            }
-
-            dh.writeJSONArray("time", info);
-
-            info = new ArrayList<String>(); //TODO add dates
-
-            dh.writeJSONArray("date", info);
-
+            dh.newJSONName("schedule",fileName);
+            dh.newJSONName("matches", numMatches);
+            dh.newJSONName("devices",numDevices);
+            dh.newJSONName("competition",competitionInput.getText().toString());
+            dh.newJSONName("challenge",challengeSelector.getSelectedItem().toString());
+            dh.newJSONName("host",bt.getAddress());
+            dh.newJSONName("devicenum","");
+            dh.writeJSONArray("assigneddevices",deviceNames);
             dh.endJSONObject();
+
+            ArrayList<String> info = new ArrayList<String>();
+            info.add(deviceNumInput.getText().toString());
+            info.add(matchNumInput.getText().toString());
+
+            for(int i = 1; i<=numMatches;i++){
+                dh.newJSONObject();
+                dh.newJSONName("number",i);
+
+                info = new ArrayList<String>();
+                for(EditText e:teamNums){
+                    if(e.getId()==i){
+                        info.add(e.getText().toString());
+                    }
+                }
+                dh.writeJSONArray("teams",info);
+
+                info = new ArrayList<String>();
+                for(EditText e:deviceNums){
+                    if(e.getId()==i){
+                        info.add(e.getText().toString());
+                    }
+                }
+
+                dh.writeJSONArray("devices", info);
+
+                info = new ArrayList<String>();
+                for(EditText e:times){
+                    if(e.getId()==i){
+                        info.add(e.getText().toString());
+                    }
+                }
+
+                dh.writeJSONArray("time", info);
+
+                info = new ArrayList<String>(); //TODO add dates
+
+                dh.writeJSONArray("date", info);
+
+                dh.endJSONObject();
+            }
+            dh.endJSONArray();
+            dh.endJSON();
+            return true;
+
+        }else{
+            return false;
         }
-        dh.endJSONArray();
-        dh.endJSON();
+
     }
 
 }
