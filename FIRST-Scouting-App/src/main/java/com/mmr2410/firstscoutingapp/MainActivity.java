@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
@@ -28,30 +29,25 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
     Button hostB, clientB,sendB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
-    Spinner cospinner,mispinner,challengeSelector;
+    Spinner challengeSelector;
     Spinner s1;
-    ArrayAdapter<String> communicationOptions;
     ArrayList<Spinner> DeviceListSpinners,devices;
     ArrayAdapter<String> adapter;
     ArrayList<TextView> connectionStatus;
+    ArrayList<LinearLayout> matchLayout;
     File tempFile;
     List<String> files = new ArrayList<String>();
-    List<String> btDevices, listBuffer, btDeviceNames = new ArrayList<String>();
+    List<String> btDevices, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
     Set<BluetoothDevice> pairedDevices;
     int lastScreen = 0;
@@ -59,15 +55,12 @@ public class MainActivity extends ActionBarActivity {
     BluetoothAdapter bt;
     Display display;
     FileOutputStream fos;
-    InputStream in;
-    BufferedReader reader,reader2;
     Point pointBuffer = new Point();
     LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
     TextView t1, t2, t3, t4, t5, t6, t7;
     EditText e1, e2, matchNumInput, deviceNumInput, ssFileName,competitionInput;
     ArrayList<EditText> teamNums, times;
     int numTeams,numDevices,componentWidth,loopTimes = 0;
-    String stringBuffer;
     String tag = "FIRST-Scouting";
     String fileLocation = "storage/sdcard0/FIRST-Scouting/";
     ListView lv1;
@@ -176,14 +169,9 @@ public class MainActivity extends ActionBarActivity {
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 ll = (LinearLayout)findViewById(R.id.Devices);
                 ll.removeAllViews();
-                try {
-                    in = new FileInputStream(fileLocation+"schedules/"+ arg0.getSelectedItem().toString());
-                    reader = new BufferedReader(new InputStreamReader(in));
-                } catch (Exception e) {
-                    Log.e(tag, e.toString());
-                }
+
                 try{
-                    numDevices = Integer.parseInt(dh.getJSONStringFromMatch(reader,0,"devices"));
+                    numDevices = Integer.parseInt(dh.getJSONStringFromMatch(fileLocation+"schedules/"+ arg0.getSelectedItem().toString(),0,"devices"));
                 }catch(Exception e){
                     Log.e(tag,"Not able to get number of matches. File not JSON?");
                 }
@@ -241,36 +229,36 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.client_screen);
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
+        matchLayout = new ArrayList<LinearLayout>();
 
         ll = (LinearLayout)findViewById(R.id.clientLayout);
 
         for (File file : tempFile.listFiles()) {
             files.add(file.getName());
 
-            try {
-                reader = new BufferedReader(new FileReader(file));
-            } catch (FileNotFoundException e) {
-                Log.e(tag,e.toString());
-            } catch (IOException e) {
-                Log.e(tag,e.toString());
-            }
-
             l1 = new LinearLayout(this);
             l1.setOrientation(LinearLayout.VERTICAL);
             l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 
-            newDivider(Color.BLUE,5,l1);
-            newTextView(file.getName(),l1);
-            try {
-                newTextView(reader.readLine(),l1);
-                newTextView(reader.readLine(), l1);
-            } catch (IOException e) {
-                Log.e(tag,e.toString());
-            }
+            newDivider(Color.RED, 5, l1);
+            newTextViewTitle(dh.getJSONStringFromMatch(file.getName(), 0, "schedule"), 20, l1);
+            newTextView(dh.getJSONStringFromMatch(file.getName(),0,"competition"),l1);
+            newTextView(dh.getJSONStringFromMatch(file.getName(),1,"time"),l1);
+
+            matchLayout.add(l1);
+
+            l1.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(tag, "You clicked the match layout.");
+                    view.setBackgroundColor(Color.BLUE);
+                }
+            });
+
 
             ll.addView(l1);
-
         }
+ 
     }
 
     public void toSendScreen() {
@@ -387,15 +375,8 @@ public class MainActivity extends ActionBarActivity {
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);
 
         try {
-            in = new FileInputStream(fileLocation+"schedules/"+fileName);
-        } catch (FileNotFoundException e) {
-            Log.e(tag,e.toString());
-        }
-        reader = new BufferedReader(new InputStreamReader(in));
-
-        try {
             t1 = new TextView(this);
-            t1.setText(dh.getJSONStringFromMatch(reader, 0, "schedule"));
+            t1.setText(dh.getJSONStringFromMatch(fileLocation+"schedules/"+fileName, 0, "schedule"));
             t1.setTextSize(20);
             t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             t1.setGravity(Gravity.CENTER);
@@ -404,14 +385,7 @@ public class MainActivity extends ActionBarActivity {
             Log.e(tag,e.toString());
         }
 
-        try {
-            in = new FileInputStream(fileLocation+"schedules/"+fileName);
-        } catch (FileNotFoundException e) {
-            Log.e(tag,e.toString());
-        }
-        reader = new BufferedReader(new InputStreamReader(in));
-
-        btDeviceNames = dh.getJSONArrayFromMatch(reader, 0, "assigneddevices");
+        btDeviceNames = dh.getJSONArrayFromMatch(fileName, 0, "assigneddevices");
         Log.d(tag,btDeviceNames.toString());
 
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, btDeviceNames);
@@ -621,6 +595,16 @@ public class MainActivity extends ActionBarActivity {
         ll.addView(t1);
     }
 
+    public void newTextViewTitle(String text,int size,LinearLayout ll){
+        t1 = new TextView(this);
+        t1.setText(text);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        t1.setGravity(Gravity.CENTER_HORIZONTAL);
+        t1.setTextSize(size);
+        t1.setTypeface(null, Typeface.BOLD);
+        ll.addView(t1);
+    }
+      
     public void newDivider(int color, int height, LinearLayout ll){
         t1 = new TextView(this);
         t1.setText("");
@@ -685,14 +669,11 @@ public class MainActivity extends ActionBarActivity {
 
                 dh.writeJSONArray("devices", info);
 
-                info = new ArrayList<String>();
                 for(EditText e:times){
                     if(e.getId()==i){
-                        info.add(e.getText().toString());
+                        dh.newJSONName("time", e.getText().toString());
                     }
                 }
-
-                dh.writeJSONArray("time", info);
 
                 info = new ArrayList<String>(); //TODO add dates
 

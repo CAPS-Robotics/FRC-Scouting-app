@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -177,7 +178,16 @@ public class DataHandling {
         }
     }
 
-    public String getJSONStringFromMatch(BufferedReader reader, int matchNum, String var){
+    public String getJSONStringFromMatch(String fileName, int matchNum, String var){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(new File("storage/sdcard0/FIRST-Scouting/schedules/"+fileName)));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+
         try {
             jobject = new JSONObject(reader.readLine());
         } catch (IOException e) {
@@ -195,7 +205,73 @@ public class DataHandling {
         return null;
     }
 
-    public ArrayList<String> getJSONArrayFromMatch(BufferedReader reader, int matchNum, String var){
+    public String getJSONStringFromMatch(File file, int matchNum, String var){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+
+        try {
+            jobject = new JSONObject(reader.readLine());
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 316:  " + e.toString());
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 317:  " + e.toString());
+        }
+        try {
+            jarray = jobject.getJSONArray("data");
+            jobject2 = jarray.getJSONObject(matchNum);
+            return jobject2.getString(var);
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 318:  " + e.toString());
+        }
+        return null;
+    }
+
+    public ArrayList<String> getJSONArrayFromMatch(String fileName, int matchNum, String var){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(new File("storage/sdcard0/FIRST-Scouting/schedules/"+fileName)));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+        try {
+            jobject = new JSONObject(reader.readLine());
+        } catch (IOException e) {
+            Log.e(tag, "ERROR CODE 316:  " + e.toString());
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 317:  " + e.toString());
+        }
+        try {
+            jarray = jobject.getJSONArray("data");
+            jobject2 = jarray.getJSONObject(matchNum);
+            jarray = jobject2.getJSONArray(var);
+            ArrayList<String> info = new ArrayList<String>();
+            for(int i = 0;i<jarray.length();i++){
+                info.add(jarray.get(i).toString());
+            }
+            return info;
+        } catch (JSONException e) {
+            Log.e(tag, "ERROR CODE 318:  " + e.toString());
+        }
+        return null;
+    }
+
+    public ArrayList<String> getJSONArrayFromMatch(File file, int matchNum, String var){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
         try {
             jobject = new JSONObject(reader.readLine());
         } catch (IOException e) {
