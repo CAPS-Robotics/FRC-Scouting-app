@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity {
     Spinner cospinner,mispinner,challengeSelector;
     Spinner s1;
     ArrayAdapter<String> communicationOptions;
-    ArrayList<Spinner> DeviceListSpinners;
+    ArrayList<Spinner> DeviceListSpinners,devices;
     ArrayAdapter<String> adapter;
     ArrayList<TextView> connectionStatus;
     File tempFile;
@@ -65,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
     LinearLayout ssMainLayout, ssGenerated, ll, l1, l2;
     TextView t1, t2, t3, t4, t5, t6, t7;
     EditText e1, e2, matchNumInput, deviceNumInput, ssFileName,competitionInput;
-    ArrayList<EditText> teamNums, devices, times;
+    ArrayList<EditText> teamNums, times;
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String stringBuffer;
     String tag = "FIRST-Scouting";
@@ -325,7 +325,7 @@ public class MainActivity extends ActionBarActivity {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 ssGenerated.removeAllViews();
                 teamNums = new ArrayList<EditText>();
-                devices = new ArrayList<EditText>();
+                devices = new ArrayList<Spinner>();
                 times = new ArrayList<EditText>();
                 try{
                     if(Integer.parseInt(matchNumInput.getText().toString())>50){
@@ -339,6 +339,27 @@ public class MainActivity extends ActionBarActivity {
         });
 
         deviceNumInput = (EditText) findViewById(R.id.DeviceNumInput);
+        deviceNumInput.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                try{
+                    ArrayList<String> info = new ArrayList<String>();
+                    for(int a = 1; a<=Integer.parseInt(deviceNumInput.getText().toString());a++){
+                        info.add(a+"");
+                    }
+
+                    for(Spinner s:devices){
+                        adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, info);
+                        s.setAdapter(adapter);
+                    }
+                }catch(Exception e){
+                    Log.e(tag,e.toString());
+                    Log.e(tag,deviceNumInput.getText().toString());
+                    Log.e(tag,deviceNumInput.getText().toString().equals("1")+"");
+                }
+                return false;
+            }
+        });
 
         ssSaveB.setOnClickListener(new OnClickListener() {
 
@@ -556,12 +577,24 @@ public class MainActivity extends ActionBarActivity {
                     t7 = new TextView(this);
                     t7.setText("Team " + numDevices + ":");
                     l2.addView(t7);
+
+                    Spinner s = new Spinner(this);
+                    s.setLayoutParams(new LayoutParams(140, LayoutParams.MATCH_PARENT));
+                    s.setId(loopTimes);
+                    ArrayList<String> info = new ArrayList<String>();
+                    info.add("1");
+
+                    adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, info);
+                    s.setAdapter(adapter);
+                    devices.add(s);
+                    l2.addView(s);
+
                     e2 = new EditText(this);
                     e2.setInputType(InputType.TYPE_CLASS_NUMBER);
                     e2.setLayoutParams(new LayoutParams(140, LayoutParams.MATCH_PARENT));
                     e2.setId(loopTimes);
-                    devices.add(e2);
-                    l2.addView(e2);
+//                    devices.add(e2);
+//                    l2.addView(e2);
                     componentWidth += 233;
                     numDevices++;
                 } else {
@@ -596,7 +629,7 @@ public class MainActivity extends ActionBarActivity {
         ll.addView(t1);
     }
 
-    public boolean newScheduleFile(String fileName, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<EditText> deviceNums, ArrayList<EditText> times){
+    public boolean newScheduleFile(String fileName, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<Spinner> deviceNums, ArrayList<EditText> times){
         if(fileName != null){
             try {
             tempFile = new File(fileLocation+"schedules/"+fileName);
@@ -644,9 +677,9 @@ public class MainActivity extends ActionBarActivity {
                 dh.writeJSONArray("teams",info);
 
                 info = new ArrayList<String>();
-                for(EditText e:deviceNums){
-                    if(e.getId()==i){
-                        info.add(e.getText().toString());
+                for(Spinner s:deviceNums){
+                    if(s.getId()==i){
+                        info.add(s.getSelectedItem().toString());
                     }
                 }
 
