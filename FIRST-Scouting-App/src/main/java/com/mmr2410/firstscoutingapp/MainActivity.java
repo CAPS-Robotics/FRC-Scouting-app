@@ -171,7 +171,7 @@ public class MainActivity extends ActionBarActivity {
                 ll.removeAllViews();
 
                 try{
-                    numDevices = Integer.parseInt(dh.getJSONStringFromMatch(fileLocation+"schedules/"+ arg0.getSelectedItem().toString(),0,"devices"));
+                    numDevices = Integer.parseInt(dh.getJSONStringFromMatch( arg0.getSelectedItem().toString(),0,"devices"));
                 }catch(Exception e){
                     Log.e(tag,"Not able to get number of matches. File not JSON?");
                 }
@@ -230,8 +230,12 @@ public class MainActivity extends ActionBarActivity {
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
         matchLayout = new ArrayList<LinearLayout>();
+        final ArrayList<String> fileNames = new ArrayList<String>();
+        final ArrayList<LinearLayout> l = new ArrayList<LinearLayout>();
 
         ll = (LinearLayout)findViewById(R.id.clientLayout);
+
+        int a = 0;
 
         for (File file : tempFile.listFiles()) {
             files.add(file.getName());
@@ -239,11 +243,31 @@ public class MainActivity extends ActionBarActivity {
             l1 = new LinearLayout(this);
             l1.setOrientation(LinearLayout.VERTICAL);
             l1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+            l1.setId(a);
 
             newDivider(Color.RED, 5, l1);
-            newTextViewTitle(dh.getJSONStringFromMatch(file.getName(), 0, "schedule"), 20, l1);
-            newTextView(dh.getJSONStringFromMatch(file.getName(),0,"competition"),l1);
-            newTextView(dh.getJSONStringFromMatch(file.getName(),1,"time"),l1);
+            String s = dh.getJSONStringFromMatch(file.getName(), 0, "schedule");
+            newTextViewTitle(s, 20, l1);
+            fileNames.add(s);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+            l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+
+            newTextView(dh.getJSONStringFromMatch(file, 0, "competition"), l2);
+            newTextView(dh.getJSONStringFromMatch(file,1,"startdate"),Gravity.RIGHT,l2);
+
+            l1.addView(l2);
+
+            for(int i = 1; i<=Integer.parseInt(dh.getJSONStringFromMatch(file, 0, "matches"));i++){
+
+                newDivider(Color.BLUE,5,l1);
+
+                l2 = new LinearLayout(this);
+                newTextView("match " + i, l2);
+                newTextView(dh.getJSONStringFromMatch(file, i, "time"), Gravity.RIGHT, l2);
+                l1.addView(l2);
+            }
 
             matchLayout.add(l1);
 
@@ -252,11 +276,22 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View view) {
                     Log.d(tag, "You clicked the match layout.");
                     view.setBackgroundColor(Color.BLUE);
+                    // go to screen for selecting match and other options, then to actual scouting
+                    int i = 0;
+                    for(LinearLayout ll: l){
+                        if(ll.getId() == view.getId()){
+                            Log.d(tag,i+",  "+fileNames.get(i));
+                            toScoutingOptions(fileNames.get(i));
+                        }
+                        i++;
+                    }
                 }
             });
 
 
             ll.addView(l1);
+            l.add(l1);
+            a++;
         }
  
     }
@@ -367,7 +402,7 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public void toHostMonitor(String fileName){
+    public void toHostMonitor(final String fileName){
         setContentView(R.layout.host_monitor);
         bt = BluetoothAdapter.getDefaultAdapter();
         connectionStatus = new ArrayList<TextView>();
@@ -439,14 +474,29 @@ public class MainActivity extends ActionBarActivity {
         b1.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(tag,"you clicked me...");
-                //TODO change file to include the device number assigned
+                ArrayList<String> info = new ArrayList<String>();
+                int i = 1;
+                for(String s:btDeviceNames){
+                    if(s.equals("<This Device>")){
+                        info.add(i+"");
+                    }
+                    i++;
+                }
+                dh.updateJSONArray(fileLocation + "schedules/" + fileName, 0, "devicenums", info);
+                //TODO send info to the other devices
             }
         });
 
         l1.addView(b1);
         ll.addView(l1);
 
+    }
+
+    public void toScoutingOptions(String fileName){
+        setContentView(R.layout.scouting_options);
+        ll = (LinearLayout)findViewById(R.id.scoutingOptionsLayout);
+
+        newTextViewTitle(fileName,20,ll);
     }
 
     /**
@@ -595,6 +645,14 @@ public class MainActivity extends ActionBarActivity {
         ll.addView(t1);
     }
 
+    public void newTextView(String text, int gravity, LinearLayout ll){
+        t1 = new TextView(this);
+        t1.setText(text);
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        t1.setGravity(gravity);
+        ll.addView(t1);
+    }
+
     public void newTextViewTitle(String text,int size,LinearLayout ll){
         t1 = new TextView(this);
         t1.setText(text);
@@ -602,7 +660,11 @@ public class MainActivity extends ActionBarActivity {
         t1.setGravity(Gravity.CENTER_HORIZONTAL);
         t1.setTextSize(size);
         t1.setTypeface(null, Typeface.BOLD);
-        ll.addView(t1);
+        try{
+            ll.addView(t1);
+        }catch(Exception e){
+            Log.e(tag,"You have an invalid linear layout,  "+e.toString());
+        }
     }
       
     public void newDivider(int color, int height, LinearLayout ll){
@@ -634,17 +696,20 @@ public class MainActivity extends ActionBarActivity {
             dh.newJSONArray("data");
 
             dh.newJSONObject();
-            dh.newJSONName("schedule",fileName);
+            dh.newJSONName("schedule",fileName);  //Match info starts at the index of 1, the info for the whole schedule is at "match" (or the index of) 0.
             dh.newJSONName("matches", numMatches);
             dh.newJSONName("devices",numDevices);
             dh.newJSONName("competition",competitionInput.getText().toString());
             dh.newJSONName("challenge",challengeSelector.getSelectedItem().toString());
             dh.newJSONName("host",bt.getAddress());
-            dh.newJSONName("devicenum","");
+            ArrayList<String> info = new ArrayList<String>();
+            dh.writeJSONArray("devicenums", info);
             dh.writeJSONArray("assigneddevices",deviceNames);
+            dh.newJSONName("startdate", ""); //TODO Make inputs for dates
+            dh.newJSONName("enddate","");
             dh.endJSONObject();
 
-            ArrayList<String> info = new ArrayList<String>();
+            info = new ArrayList<String>();
             info.add(deviceNumInput.getText().toString());
             info.add(matchNumInput.getText().toString());
 
