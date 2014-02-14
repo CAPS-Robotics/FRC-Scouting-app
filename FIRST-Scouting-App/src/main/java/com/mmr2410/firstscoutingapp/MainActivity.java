@@ -21,10 +21,13 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +52,7 @@ public class MainActivity extends ActionBarActivity {
     List<String> files = new ArrayList<String>();
     List<String> btDevices, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
+    ArrayList<CheckBox> teamCheckBoxes = new ArrayList<CheckBox>();
     Set<BluetoothDevice> pairedDevices;
     int lastScreen = 0;
     int currentScreen = R.layout.activity_main;
@@ -492,11 +496,176 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public void toScoutingOptions(String fileName){
+    public void toScoutingOptions(final String fileName){
         setContentView(R.layout.scouting_options);
         ll = (LinearLayout)findViewById(R.id.scoutingOptionsLayout);
 
-        newTextViewTitle(fileName,20,ll);
+        newTextViewTitle(fileName,25,ll);
+
+        newTextView("Assigned device numbers:",ll);
+
+        l1 = new LinearLayout(this);
+        l1.setOrientation(LinearLayout.HORIZONTAL);
+
+        ArrayList<Integer> deviceNums = new ArrayList<Integer>();
+        for(String s:dh.getJSONArrayFromMatch(fileName,0,"devicenums")){
+            deviceNums.add(Integer.parseInt(s));
+            newTextView(s + ", ", l1);
+        }
+
+        ll.addView(l1);
+
+        for(int i = 1; i<=Integer.parseInt(dh.getJSONStringFromMatch(fileName, 0, "matches"));i++){
+            CheckBox c;
+            newDivider(Color.BLUE, 5, ll);
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+            newTextViewTitle("Match " + i, 17, l1);
+            for(int a = 0; a<dh.getJSONArrayFromMatch(fileName, i, "teams").size();a++){
+                c = new CheckBox(this);
+                c.setText(dh.getJSONArrayFromMatch(fileName, i, "teams").get(a));
+                c.setEnabled(true);
+                c.setId(i);
+                for(int b = 0; b<deviceNums.size();b++){
+                    if(Integer.parseInt(dh.getJSONArrayFromMatch(fileName,i,"devices").get(a).toString())==deviceNums.get(b)){
+                        c.setChecked(true);
+                    }
+                }
+
+                l1.addView(c);
+                teamCheckBoxes.add(c);
+
+            }
+
+            b1 = new Button(this);
+            b1.setText("Go");
+            b1.setId(i);
+            b1.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(tag, fileName);
+                    ArrayList<String> info = new ArrayList<String>();
+                    for (CheckBox c : teamCheckBoxes) {
+                        if (c.getId() == view.getId()&&c.isChecked()) {
+                            info.add(c.getText().toString());
+                        }
+                    }
+                    dh.updateJSONArray(fileLocation+"schedules/"+fileName, 0, "teamsscouted", info);
+
+                    toScouting(fileName,view.getId());
+                }
+            });
+            l1.addView(b1);
+
+            ll.addView(l1);
+        }
+    }
+
+    public void toScouting(String fileName,int matchNum){
+        setContentView(R.layout.scouting);
+        EditText e;
+        RadioGroup rg;
+        ArrayList<RadioGroup> autonomousShot = new ArrayList<RadioGroup>();
+        RadioButton rb;
+        CheckBox c;
+        ArrayList<CheckBox> running = new ArrayList<CheckBox>();
+        ArrayList<CheckBox> cbAutonomous = new ArrayList<CheckBox>();
+        ArrayList<CheckBox> cbTeleop = new ArrayList<CheckBox>();
+
+        ll = (LinearLayout)findViewById(R.id.scoutingLayout);
+        newTextViewTitle(fileName+" - Match "+matchNum,25,ll);
+
+        newDivider(20,ll);
+
+        ArrayList<String> teamsToScout = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
+
+        newTextView("Does it run?",ll);
+        l1 = new LinearLayout(this);
+        l1.setOrientation(LinearLayout.VERTICAL);
+        for(int i = 0;i<teamsToScout.size();i++){
+            c = new CheckBox(this);
+            c.setText(teamsToScout.get(i)+"");
+            c.setEnabled(true);
+            c.setId(i);
+            c.setChecked(true);
+            l1.addView(c);
+            running.add(c);
+        }
+        ll.addView(l1);
+
+
+        for(int i = 0; i<teamsToScout.size();i++){
+            l1 = new LinearLayout(this);
+            l1.setId(i);
+            newDivider(Color.BLUE, 5, l1);
+            newTextViewTitle(teamsToScout.get(i)+" - Autonomous", 17, l1);
+
+            c = new CheckBox(this);
+            c.setText("Reached their zone?");
+            l1.addView(c);
+            cbAutonomous.add(c);
+
+            rg = new RadioGroup(this);
+            rg.setId(i);
+            rg.setOrientation(RadioGroup.HORIZONTAL);
+            rg.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            rb = new RadioButton(this);
+            rb.setText("Ground");
+            rb.setId(1);
+            rg.addView(rb);
+
+            rb = new RadioButton(this);
+            rb.setText("Top");
+            rb.setId(2);
+            rg.addView(rb);
+
+            rb = new RadioButton(this);
+            rb.setText("Hot Goal");
+            rb.setId(3);
+            rg.addView(rb);
+
+            l1.addView(rg);
+            autonomousShot.add(rg);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+
+            newTextView("Score: ",l2);
+
+            e = new EditText(this);
+            e.setLayoutParams(new LayoutParams(50,LayoutParams.WRAP_CONTENT));
+            e.setHint(0 + "");
+            e.setId(0);
+            l2.addView(e);
+            l1.addView(l2);
+
+            newTextView("Notes:",l1);
+
+            e = new EditText(this);
+            e.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+            l1.addView(e);
+
+            ll.addView(l1);
+        }
+        newDivider(Color.BLUE,5,ll);
+        newDivider(5,ll);
+
+        for(int i = 0; i<teamsToScout.size();i++){
+            newDivider(Color.RED,5,ll);
+            newTextViewTitle(teamsToScout.get(i)+" - TELEOP", 17, ll);
+
+        }
+        newDivider(Color.RED,5,ll);
+        newDivider(5,ll);
+
+        for(int i = 0; i<teamsToScout.size();i++){
+            newDivider(Color.WHITE,5,ll);
+            newTextViewTitle(teamsToScout.get(i)+" - Post-Game", 17, ll);
+
+        }
+        newDivider(Color.WHITE,5,ll);
+
     }
 
     /**
@@ -675,6 +844,13 @@ public class MainActivity extends ActionBarActivity {
         ll.addView(t1);
     }
 
+    public void newDivider(int height, LinearLayout ll){
+        t1 = new TextView(this);
+        t1.setText("");
+        t1.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,height));
+        ll.addView(t1);
+    }
+
     public boolean newScheduleFile(String fileName, int numMatches, int numDevices,ArrayList<EditText> teamNums, ArrayList<Spinner> deviceNums, ArrayList<EditText> times){
         if(fileName != null){
             try {
@@ -705,6 +881,7 @@ public class MainActivity extends ActionBarActivity {
             ArrayList<String> info = new ArrayList<String>();
             dh.writeJSONArray("devicenums", info);
             dh.writeJSONArray("assigneddevices",deviceNames);
+            dh.writeJSONArray("teamsscouted",info);
             dh.newJSONName("startdate", ""); //TODO Make inputs for dates
             dh.newJSONName("enddate","");
             dh.endJSONObject();
