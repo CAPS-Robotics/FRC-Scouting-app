@@ -23,8 +23,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -500,6 +502,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.scouting_options);
         ll = (LinearLayout)findViewById(R.id.scoutingOptionsLayout);
 
+        teamCheckBoxes = new ArrayList<CheckBox>();
+
         newTextViewTitle(fileName,25,ll);
 
         newTextView("Assigned device numbers:",ll);
@@ -571,6 +575,10 @@ public class MainActivity extends ActionBarActivity {
         ArrayList<CheckBox> running = new ArrayList<CheckBox>();
         ArrayList<CheckBox> cbAutonomous = new ArrayList<CheckBox>();
         ArrayList<CheckBox> cbTeleop = new ArrayList<CheckBox>();
+        NumberPicker np;
+        ArrayList<NumberPicker> teleopnp = new ArrayList<NumberPicker>();
+        ArrayList<EditText> notes = new ArrayList<EditText>();
+        ArrayList<EditText> totalScores = new ArrayList<EditText>();
 
         ll = (LinearLayout)findViewById(R.id.scoutingLayout);
         newTextViewTitle(fileName+" - Match "+matchNum,25,ll);
@@ -596,37 +604,47 @@ public class MainActivity extends ActionBarActivity {
 
         for(int i = 0; i<teamsToScout.size();i++){
             l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
             l1.setId(i);
             newDivider(Color.BLUE, 5, l1);
             newTextViewTitle(teamsToScout.get(i)+" - Autonomous", 17, l1);
 
             c = new CheckBox(this);
+            c.setId(i);
             c.setText("Reached their zone?");
             l1.addView(c);
             cbAutonomous.add(c);
+
+            HorizontalScrollView hsv = new HorizontalScrollView(this);
+            hsv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 
             rg = new RadioGroup(this);
             rg.setId(i);
             rg.setOrientation(RadioGroup.HORIZONTAL);
             rg.setGravity(Gravity.CENTER_HORIZONTAL);
+            rg.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+            rb = new RadioButton(this);
+            rb.setText("None");
+            rb.setChecked(true);
+            rg.addView(rb);
 
             rb = new RadioButton(this);
             rb.setText("Ground");
-            rb.setId(1);
             rg.addView(rb);
 
             rb = new RadioButton(this);
             rb.setText("Top");
-            rb.setId(2);
             rg.addView(rb);
 
             rb = new RadioButton(this);
             rb.setText("Hot Goal");
-            rb.setId(3);
             rg.addView(rb);
 
-            l1.addView(rg);
+            hsv.addView(rg);
+            l1.addView(hsv);
             autonomousShot.add(rg);
+
 
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
@@ -634,9 +652,11 @@ public class MainActivity extends ActionBarActivity {
             newTextView("Score: ",l2);
 
             e = new EditText(this);
-            e.setLayoutParams(new LayoutParams(50,LayoutParams.WRAP_CONTENT));
+            e.setInputType(InputType.TYPE_CLASS_NUMBER);
+            e.setLayoutParams(new LayoutParams(150,LayoutParams.WRAP_CONTENT));
             e.setHint(0 + "");
             e.setId(0);
+
             l2.addView(e);
             l1.addView(l2);
 
@@ -645,23 +665,214 @@ public class MainActivity extends ActionBarActivity {
             e = new EditText(this);
             e.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
             l1.addView(e);
+            notes.add(e);
 
             ll.addView(l1);
+
         }
         newDivider(Color.BLUE,5,ll);
         newDivider(5,ll);
 
         for(int i = 0; i<teamsToScout.size();i++){
-            newDivider(Color.RED,5,ll);
-            newTextViewTitle(teamsToScout.get(i)+" - TELEOP", 17, ll);
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+            newDivider(Color.RED,5,l1);
+            newTextViewTitle(teamsToScout.get(i)+" - TELEOP", 17, l1);
 
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+
+            c = new CheckBox(this);
+            c.setId(i);
+            c.setText("Can Pass");
+            l2.addView(c);
+            cbTeleop.add(c);
+
+            c = new CheckBox(this);
+            c.setId(i);
+            c.setText("Can Shoot");
+            l2.addView(c);
+            cbTeleop.add(c);
+
+            l1.addView(l2);
+
+            newDivider(10, l1);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+            l2.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            LinearLayout l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Total Shots:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+
+            l2.addView(l3);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Ground Goal:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+
+            l2.addView(l3);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Top Goal:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+
+            l2.addView(l3);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Hot Goal:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+
+            l2.addView(l3);
+
+
+            l1.addView(l2);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Truss Shots:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+            l2.addView(l3);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Total Catches:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+            l2.addView(l3);
+
+            l3 = new LinearLayout(this);
+            l3.setOrientation(LinearLayout.VERTICAL);
+
+            newTextView("Total Score:   ", l3);
+
+            np = new NumberPicker(this);
+            np.setId(i);
+            np.setValue(0);
+            np.setMinValue(0);
+            np.setMaxValue(99);
+            np.setWrapSelectorWheel(false);
+            l3.addView(np);
+            teleopnp.add(np);
+            l2.addView(l3);
+
+            l1.addView(l2);
+
+            ll.addView(l1);
         }
         newDivider(Color.RED,5,ll);
-        newDivider(5,ll);
+//        newDivider(5,ll);
 
         for(int i = 0; i<teamsToScout.size();i++){
-            newDivider(Color.WHITE,5,ll);
-            newTextViewTitle(teamsToScout.get(i)+" - Post-Game", 17, ll);
+
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+
+            newDivider(Color.WHITE, 5, l1);
+            newTextViewTitle(teamsToScout.get(i)+" - Post-Game", 17, l1);
+
+            newTextView("Final Notes:",l1);
+
+            e = new EditText(this);
+            e.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+            e.setId(i);
+            l1.addView(e);
+            notes.add(e);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+
+            newTextView("Final Blue Alliance Score:", l2);
+
+            e = new EditText(this);
+            e.setId(i);
+            e.setLayoutParams(new LayoutParams(150,LayoutParams.WRAP_CONTENT));
+            e.setInputType(InputType.TYPE_CLASS_NUMBER);
+            l2.addView(e);
+            totalScores.add(e);
+
+            l1.addView(l2);
+
+            newDivider(15, ll);
+
+            l2 = new LinearLayout(this);
+            l2.setOrientation(LinearLayout.HORIZONTAL);
+
+            newTextView("Final Red Alliance Score:", l2);
+
+            e = new EditText(this);
+            e.setId(i);
+            e.setLayoutParams(new LayoutParams(150,LayoutParams.WRAP_CONTENT));
+            e.setInputType(InputType.TYPE_CLASS_NUMBER);
+            l2.addView(e);
+            totalScores.add(e);
+
+            l1.addView(l2);
+
+            newDivider(15, ll);
+
+            ll.addView(l1);
 
         }
         newDivider(Color.WHITE,5,ll);
@@ -711,6 +922,7 @@ public class MainActivity extends ActionBarActivity {
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
             l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 50));
+            l2.setGravity(Gravity.CENTER_HORIZONTAL);
             t5 = new TextView(this);
             t5.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
             t5.setText("Teams: ");
@@ -741,6 +953,7 @@ public class MainActivity extends ActionBarActivity {
                     l2 = new LinearLayout(this);
                     l2.setOrientation(LinearLayout.HORIZONTAL);
                     l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
+                    l2.setGravity(Gravity.CENTER_HORIZONTAL);
                 }
             }
             ll.addView(l2);
@@ -763,6 +976,7 @@ public class MainActivity extends ActionBarActivity {
             l2 = new LinearLayout(this);
             l2.setOrientation(LinearLayout.HORIZONTAL);
             l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
+            l2.setGravity(Gravity.CENTER_HORIZONTAL);
             componentWidth = 0;
             numDevices = 1;
             while (numDevices <= 6) {
@@ -796,6 +1010,7 @@ public class MainActivity extends ActionBarActivity {
                     l2 = new LinearLayout(this);
                     l2.setOrientation(LinearLayout.HORIZONTAL);
                     l2.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, 75));
+                    l2.setGravity(Gravity.CENTER_HORIZONTAL);
                 }
             }
             ll.addView(l2);
