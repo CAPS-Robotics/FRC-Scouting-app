@@ -289,7 +289,7 @@ public class DataHandling {
             }
             return info;
         } catch (JSONException e) {
-            Log.e(tag, "ERROR CODE 318:  " + e.toString());
+            Log.e(tag, "ERROR CODE 318:  " + e.getMessage());
         }
         return null;
     }

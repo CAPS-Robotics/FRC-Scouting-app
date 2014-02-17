@@ -299,7 +299,22 @@ public class MainActivity extends ActionBarActivity {
             l.add(l1);
             a++;
         }
+
+        Button b = new Button(this);
+        b.setText("Recieve Data");
+        b.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+        b.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bluetooth bt = new Bluetooth(MainActivity.this);
+                bt.recieveFromDevice();
+            }
+        });
+        ll.addView(b);
  
+    } 
+    public void handleReceiveFromDevice(String data) {
+        Log.d(tag,data);
     }
 
     public void toSendScreen() {
@@ -485,11 +500,13 @@ public class MainActivity extends ActionBarActivity {
                 for(String s:btDeviceNames){
                     if(s.equals("<This Device>")){
                         info.add(i+"");
+                    }else{
+                        Bluetooth b = new Bluetooth(MainActivity.this);
+                        b.sendData(s,"hi");
                     }
                     i++;
                 }
                 dh.updateJSONArray(fileLocation + "schedules/" + fileName, 0, "devicenums", info);
-                //TODO send info to the other devices
             }
         });
 
