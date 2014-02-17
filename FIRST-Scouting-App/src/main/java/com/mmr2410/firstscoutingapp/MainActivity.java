@@ -50,6 +50,7 @@ public class MainActivity extends ActionBarActivity {
     ArrayAdapter<String> adapter;
     ArrayList<TextView> connectionStatus;
     ArrayList<LinearLayout> matchLayout;
+    ArrayList<Integer> contentViews = new ArrayList<Integer>();
     File tempFile;
     List<String> files = new ArrayList<String>();
     List<String> btDevices, btDeviceNames = new ArrayList<String>();
@@ -100,12 +101,58 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onBackPressed() {
-        toHomeScreen();
+        if(contentViews.size()<=1||contentViews.get(contentViews.size()-1)==R.layout.activity_main){
+            finish();
+        }
+        ArrayList<Integer> info = new ArrayList<Integer>();
+        for(int i = 0; i<contentViews.size()-1;i++){
+            info.add(contentViews.get(i));
+        }
+        contentViews = info;
+        try{
+        switch(contentViews.get(contentViews.size()-1)){
+            case R.layout.activity_main: toHomeScreen();
+                break;
+            case R.layout.host: toHostScreen();
+                break;
+            case R.layout.client_screen: toClientScreen();
+                break;
+            case R.layout.join_host: toSendScreen();
+                break;
+            case R.layout.settings_screen: toSettingsScreen();
+                break;
+            case R.layout.schedule_setup: toScheduleSetupScreen();
+                break;
+            case R.layout.host_monitor: Log.d(tag,"need to make way of going back to host monitor if this shows up");
+                break;
+            case R.layout.scouting_options:
+                info = new ArrayList<Integer>();
+                for(int i = 0; i<contentViews.size()-1;i++){
+                    info.add(contentViews.get(i));
+                }
+                contentViews = info;
+                toClientScreen();
+                break;
+            case R.layout.scouting: Log.d(tag,"if you see this, scouting needs to be handled when pressing back");
+                break;
+            default: finish();
+                break;
+        }
+        }catch(Exception e){
+            Log.e(tag,e.toString());
+        }
+        info = new ArrayList<Integer>();
+        for(int i = 0; i<contentViews.size()-1;i++){
+            info.add(contentViews.get(i));
+        }
+        contentViews = info;
+        Log.d(tag,contentViews.toString());
     }
 
     public void toHomeScreen() {
         lastScreen = 0;
         setContentView(R.layout.activity_main);
+        contentViews.add(R.layout.activity_main);
         currentScreen = R.layout.activity_main;
         hostB = (Button) findViewById(R.id.newScheduleB);
         clientB = (Button) findViewById(R.id.ClientB);
@@ -138,12 +185,13 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toHostScreen() {
+        setContentView(R.layout.host);
+        contentViews.add(R.layout.host);
         DeviceListSpinners = new ArrayList<Spinner>();
         scheduledFiles = new ArrayList<String>();
         btDevices = new ArrayList<String>();
         bt = BluetoothAdapter.getDefaultAdapter();
         lastScreen = currentScreen;
-        setContentView(R.layout.host);
         ll = (LinearLayout)findViewById(R.id.Devices);
         ll.removeAllViews();
         tempFile = new File(fileLocation+"schedules");
@@ -233,6 +281,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void toClientScreen(){
         setContentView(R.layout.client_screen);
+        contentViews.add(R.layout.client_screen);
         tempFile = new File(fileLocation+"schedules/");
         files = new ArrayList<String>();
         matchLayout = new ArrayList<LinearLayout>();
@@ -312,13 +361,15 @@ public class MainActivity extends ActionBarActivity {
         });
         ll.addView(b);
  
-    } 
+    }
+
     public void handleReceiveFromDevice(String data) {
         Log.d(tag,data);
     }
 
     public void toSendScreen() {
         setContentView(R.layout.join_host);
+        contentViews.add(R.layout.join_host);
         btDevices = new ArrayList<String>();
         bt = BluetoothAdapter.getDefaultAdapter();
         pairedDevices = bt.getBondedDevices();
@@ -343,9 +394,10 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toScheduleSetupScreen() {
+        setContentView(R.layout.schedule_setup);
+        contentViews.add(R.layout.schedule_setup);
         lastScreen = currentScreen;
         currentScreen = R.layout.schedule_setup;
-        setContentView(R.layout.schedule_setup);
         ssMainLayout = (LinearLayout) findViewById(R.id.ssMainL);
         ssGenerated = (LinearLayout) findViewById(R.id.ssGenerated);
         ssSaveB = (Button) findViewById(R.id.ssb);
@@ -411,7 +463,10 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View v) {
 
                 if(newScheduleFile(ssFileName.getText().toString(),Integer.parseInt(matchNumInput.getText().toString()),Integer.parseInt(deviceNumInput.getText().toString()),teamNums,devices,times)){
-
+                    ArrayList<Integer> info = new ArrayList<Integer>();
+                    for(int i = 0; i<contentViews.size()-1;i++){
+                        info.add(contentViews.get(i));
+                    }
                     toHostScreen();
                 }else{
                     Toast toast = Toast.makeText(getApplicationContext(), "Enter a valid schedule name", Toast.LENGTH_SHORT);
@@ -425,6 +480,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void toHostMonitor(final String fileName){
         setContentView(R.layout.host_monitor);
+        contentViews.add(R.layout.activity_main);
         bt = BluetoothAdapter.getDefaultAdapter();
         connectionStatus = new ArrayList<TextView>();
 
@@ -517,6 +573,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void toScoutingOptions(final String fileName){
         setContentView(R.layout.scouting_options);
+        contentViews.add(R.layout.scouting_options);
         ll = (LinearLayout)findViewById(R.id.scoutingOptionsLayout);
 
         teamCheckBoxes = new ArrayList<CheckBox>();
@@ -584,6 +641,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void toScouting(String fileName,int matchNum){
         setContentView(R.layout.scouting);
+        contentViews.add(R.layout.scouting);
         EditText e;
         RadioGroup rg;
         ArrayList<RadioGroup> autonomousShot = new ArrayList<RadioGroup>();
