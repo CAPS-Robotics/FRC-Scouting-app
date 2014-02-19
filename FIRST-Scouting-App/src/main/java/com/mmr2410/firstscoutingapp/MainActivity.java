@@ -1,11 +1,11 @@
 package com.mmr2410.firstscoutingapp;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -40,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class MainActivity extends ActionBarActivity {
     Button hostB, clientB,sendB, settingsB, NewScheduleB, ssSaveB,hostStartB,b1;
@@ -56,10 +55,8 @@ public class MainActivity extends ActionBarActivity {
     List<String> btDevices, btDeviceNames = new ArrayList<String>();
     List<String> scheduledFiles = new ArrayList<String>();
     ArrayList<CheckBox> teamCheckBoxes = new ArrayList<CheckBox>();
-    Set<BluetoothDevice> pairedDevices;
     int lastScreen = 0;
     int currentScreen = R.layout.activity_main;
-    BluetoothAdapter bt;
     Display display;
     FileOutputStream fos;
     Point pointBuffer = new Point();
@@ -69,15 +66,19 @@ public class MainActivity extends ActionBarActivity {
     ArrayList<EditText> teamNums, times;
     int numTeams,numDevices,componentWidth,loopTimes = 0;
     String tag = "FIRST-Scouting";
-    String fileLocation = "storage/sdcard0/FIRST-Scouting/";
+    String fileLocation;
     ListView lv1;
     ProgressBar pb;
-    DataHandling dh = new DataHandling();
+    DataHandling dh;
+    Bluetooth bt;
 
 //    new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        fileLocation = Environment.getExternalStorageDirectory().getAbsolutePath()+"/FIRST-Scouting/";
+        Log.d(tag,fileLocation);
+        dh = new DataHandling(fileLocation);
         display = getWindowManager().getDefaultDisplay();
 //        setTheme(android.R.style.Theme_Black);
         super.onCreate(savedInstanceState);
@@ -89,6 +90,7 @@ public class MainActivity extends ActionBarActivity {
             tempFile = new File(fileLocation+"matchdata");
             tempFile.mkdirs();
         }catch(Exception e){Log.e(tag,e.toString());}
+        bt = new Bluetooth(this);
         toHomeScreen();
     }
 
@@ -101,7 +103,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onBackPressed() {
-        if(contentViews.size()<=1||contentViews.get(contentViews.size()-1)==R.layout.activity_main){
+        Log.d(tag,"before: "+contentViews.toString());
+        if(contentViews.size()<=1){
+            Log.d(tag,(contentViews.size()<=1)+", "+(contentViews.get(contentViews.size()-1)==R.layout.activity_main)+", "+contentViews.get(contentViews.size()-1)+", "+R.layout.activity_main);
             finish();
         }
         ArrayList<Integer> info = new ArrayList<Integer>();
@@ -146,7 +150,7 @@ public class MainActivity extends ActionBarActivity {
             info.add(contentViews.get(i));
         }
         contentViews = info;
-        Log.d(tag,contentViews.toString());
+        Log.d(tag,"after: "+contentViews.toString());
     }
 
     public void toHomeScreen() {
@@ -190,7 +194,6 @@ public class MainActivity extends ActionBarActivity {
         DeviceListSpinners = new ArrayList<Spinner>();
         scheduledFiles = new ArrayList<String>();
         btDevices = new ArrayList<String>();
-        bt = BluetoothAdapter.getDefaultAdapter();
         lastScreen = currentScreen;
         ll = (LinearLayout)findViewById(R.id.Devices);
         ll.removeAllViews();
@@ -206,11 +209,10 @@ public class MainActivity extends ActionBarActivity {
             Log.e(tag,e.toString());
         }
 
-        pairedDevices = bt.getBondedDevices();
         btDevices.add("<None>");
         btDevices.add("<This Device>");
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
+        if (bt.getPairedDevices().size() > 0) {
+            for (BluetoothDevice device : bt.getPairedDevices()) {
                 btDevices.add(device.getName() + "");
             }
         }else{
@@ -371,10 +373,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.join_host);
         contentViews.add(R.layout.join_host);
         btDevices = new ArrayList<String>();
-        bt = BluetoothAdapter.getDefaultAdapter();
-        pairedDevices = bt.getBondedDevices();
         pb = (ProgressBar)findViewById(R.id.progressBar1);
-        for(BluetoothDevice b: pairedDevices){
+        for(BluetoothDevice b: bt.getPairedDevices()){
             btDevices.add(b.getName());
         }
         lv1 = (ListView)findViewById(R.id.hostList);
@@ -480,8 +480,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void toHostMonitor(final String fileName){
         setContentView(R.layout.host_monitor);
-        contentViews.add(R.layout.activity_main);
-        bt = BluetoothAdapter.getDefaultAdapter();
+        contentViews.add(R.layout.host_monitor);
         connectionStatus = new ArrayList<TextView>();
 
         ll = (LinearLayout)findViewById(R.id.host_monitor_layout);

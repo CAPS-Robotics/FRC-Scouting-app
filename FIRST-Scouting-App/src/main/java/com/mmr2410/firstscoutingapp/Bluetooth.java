@@ -106,4 +106,8 @@ public class Bluetooth extends Thread{
         return btDevices;
     }
 
+    public String getAddress(){
+        return BluetoothAdapter.getDefaultAdapter().getAddress();
+    }
+
 }

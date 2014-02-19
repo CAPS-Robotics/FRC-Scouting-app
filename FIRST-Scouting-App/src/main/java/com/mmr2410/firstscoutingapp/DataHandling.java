@@ -32,8 +32,11 @@ public class DataHandling {
     JsonWriter jwriter;
     ArrayList<String>strings;
     String tag = "FIRST-Scouting";
-    int a=0;
+    String dirLocation;
 
+    public DataHandling(String loc){
+        dirLocation = loc;
+    }
 
 
     /**
@@ -181,7 +184,7 @@ public class DataHandling {
     public String getJSONStringFromMatch(String fileName, int matchNum, String var){
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(new File("storage/sdcard0/FIRST-Scouting/schedules/"+fileName)));
+            reader = new BufferedReader(new FileReader(new File(dirLocation+"schedules/"+fileName)));
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         } catch (IOException e) {
@@ -235,7 +238,7 @@ public class DataHandling {
     public ArrayList<String> getJSONArrayFromMatch(String fileName, int matchNum, String var){
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(new File("storage/sdcard0/FIRST-Scouting/schedules/"+fileName)));
+            reader = new BufferedReader(new FileReader(new File(dirLocation+"schedules/"+fileName)));
         } catch (FileNotFoundException e) {
             Log.e(tag,e.toString());
         } catch (IOException e) {
