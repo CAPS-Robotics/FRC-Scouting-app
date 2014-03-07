@@ -38,7 +38,6 @@ public class DataHandling {
         dirLocation = loc;
     }
 
-
     /**
      * Get string from a json file and from a specific variable type.
      * @param url
@@ -90,12 +89,12 @@ public class DataHandling {
         }
     }
 
-    public void writeJSONArray(String var, ArrayList<String> content){
+    public void writeJSONArray(String var, ArrayList content){
         try {
             jwriter.name(var);
             jwriter.beginArray();
-            for(String s1: content){
-                jwriter.value(s1);
+            for(Object s1: content){
+                jwriter.value(s1.toString());
             }
             jwriter.endArray();
         } catch (IOException e) {
@@ -380,5 +379,40 @@ public class DataHandling {
             e.printStackTrace();
         }
 
+    }
+
+    public void saveScouting(String fileName, String matchNum, ArrayList<Integer> redAlliance, ArrayList<Integer> blueAlliance, ArrayList<Integer> autoScore, ArrayList<Boolean> autoAttempts,
+                             ArrayList<String> autoNotes,ArrayList<Integer> groundScore,ArrayList<Integer> groundAttempts,ArrayList<Integer> topScore,ArrayList<Integer> topAttempts,
+                             ArrayList<Integer> hotScore,ArrayList<Integer> trussThrows,ArrayList<Integer> trussAttempts,ArrayList<Integer> totalScore,ArrayList<Integer> catches,
+                             ArrayList<Integer> catchAttempts,ArrayList<Integer> speed,ArrayList<String> finalNotes ) {
+        File f = new File(dirLocation+"scouted/"+fileName+"/"+matchNum);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        beginJSON(fos);
+
+        newJSONName("match", matchNum);
+        writeJSONArray("redAlliance",redAlliance);
+        writeJSONArray("blueAlliance",blueAlliance);
+        writeJSONArray("autoScore",autoScore);
+        writeJSONArray("autoAttempts",autoAttempts);
+        writeJSONArray("autoNotes",autoNotes);
+        writeJSONArray("groundScore",groundScore);
+        writeJSONArray("groundAttempts",groundAttempts);
+        writeJSONArray("topScore",topScore);
+        writeJSONArray("topAttempts",topAttempts);
+        writeJSONArray("hotScore",hotScore);
+        writeJSONArray("trussThrows",trussThrows);
+        writeJSONArray("trussAttempts",trussAttempts);
+        writeJSONArray("totalScore",totalScore);
+        writeJSONArray("catches",catches);
+        writeJSONArray("catchAttempts",catchAttempts);
+        writeJSONArray("speed",speed);
+        writeJSONArray("finalNotes",finalNotes);
+
+        Log.d(tag,"saved");
     }
 }
