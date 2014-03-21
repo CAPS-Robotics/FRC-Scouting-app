@@ -71,6 +71,7 @@ public class MainActivity extends ActionBarActivity {
     ProgressBar pb;
     DataHandling dh;
     Bluetooth bt;
+    GUI gui = new GUI();
 
 //    new WIFI().execute("http://www.thefirstalliance.org/api/api.json.php?action=list-teams").get()
 
@@ -627,9 +628,11 @@ public class MainActivity extends ActionBarActivity {
                             info.add(c.getText().toString());
                         }
                     }
-                    dh.updateJSONArray(fileLocation+"schedules/"+fileName, 0, "teamsscouted", info);
+                    if(info.size()>0){
+                        dh.updateJSONArray(fileLocation+"schedules/"+fileName, 0, "teamsscouted", info);
 
-                    toScouting(fileName,view.getId());
+                        toScouting(fileName,view.getId());
+                    }
                 }
             });
             l1.addView(b1);
@@ -638,383 +641,69 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void toScouting(final String fileName, final int matchNum){
+    public void toScouting(String fileName, int matchNum){
         setContentView(R.layout.scouting);
         contentViews.add(R.layout.scouting);
-        EditText e;
-        RadioGroup rg;
-        final ArrayList<RadioGroup> autonomousShot = new ArrayList<RadioGroup>();
-        final ArrayList<CheckBox> autoAttempts = new ArrayList<CheckBox>();
-        RadioButton rb;
-        CheckBox c;
-        ArrayList<CheckBox> running = new ArrayList<CheckBox>();
-        ArrayList<CheckBox> cbAutonomous = new ArrayList<CheckBox>();
-        ArrayList<CheckBox> cbTeleop = new ArrayList<CheckBox>();
-        ArrayList<EditText> autoNotes = new ArrayList<EditText>();
-        final ArrayList<CheckBox> autoHot = new ArrayList<CheckBox>();
-        NumberPicker np;
-        ArrayList<NumberPicker> teleopnp = new ArrayList<NumberPicker>();
-        ArrayList<EditText> notes = new ArrayList<EditText>();
-        ArrayList<EditText> totalScores = new ArrayList<EditText>();
-
         ll = (LinearLayout)findViewById(R.id.scoutingLayout);
-        newTextViewTitle(fileName+" - Match "+matchNum,25,ll);
 
-        newDivider(20,ll);
-
-        ArrayList<String> teamsToScout = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
-
-        newTextView("Does it run?",ll);
-        l1 = new LinearLayout(this);
-        l1.setOrientation(LinearLayout.VERTICAL);
-        for(int i = 0;i<teamsToScout.size();i++){
-            c = new CheckBox(this);
-            c.setText(teamsToScout.get(i)+"");
-            c.setEnabled(true);
-            c.setId(i);
-            c.setChecked(true);
-            l1.addView(c);
-            running.add(c);
-        }
-        ll.addView(l1);
-
-
-        for(int i = 0; i<teamsToScout.size();i++){
-            l1 = new LinearLayout(this);
-            l1.setOrientation(LinearLayout.VERTICAL);
-            l1.setId(i);
-            newDivider(Color.BLUE, 5, l1);
-            newTextViewTitle(teamsToScout.get(i)+" - Autonomous", 17, l1);
-
-            c = new CheckBox(this);
-            c.setId(i);
-            c.setText("Reached their zone?");
-            l1.addView(c);
-            cbAutonomous.add(c);
-
-            c = new CheckBox(this);
-            c.setId(i);
-            c.setText("Attempted to score?");
-            l1.addView(c);
-            autoAttempts.add(c);
-
-            HorizontalScrollView hsv = new HorizontalScrollView(this);
-            hsv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
-
-            rg = new RadioGroup(this);
-            rg.setId(i);
-            rg.setOrientation(RadioGroup.HORIZONTAL);
-            rg.setGravity(Gravity.CENTER_HORIZONTAL);
-            rg.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-
-            rb = new RadioButton(this);
-            rb.setText("None");
-            rb.setChecked(true);
-            rb.setId(0);
-            rg.addView(rb);
-
-            rb = new RadioButton(this);
-            rb.setText("Ground");
-            rb.setId(1);
-            rg.addView(rb);
-
-            rb = new RadioButton(this);
-            rb.setText("Top");
-            rb.setId(2);
-            rg.addView(rb);
-
-            hsv.addView(rg);
-            l1.addView(hsv);
-            autonomousShot.add(rg);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-
-            c = new CheckBox(this);
-            c.setId(i);
-            c.setText("Hot Goal");
-            l2.addView(c);
-            autoHot.add(c);
-
-            l1.addView(l2);
-
-            newTextView("Notes:", l1);
-
-            e = new EditText(this);
-            e.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
-            l1.addView(e);
-            autoNotes.add(e);
-
-            ll.addView(l1);
-
-        }
-        newDivider(Color.BLUE,5,ll);
-        newDivider(5,ll);
-
-        for(int i = 0; i<teamsToScout.size();i++){
-            l1 = new LinearLayout(this);
-            l1.setOrientation(LinearLayout.VERTICAL);
-            newDivider(Color.RED,5,l1);
-            newTextViewTitle(teamsToScout.get(i)+" - TELEOP", 17, l1);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-
-            c = new CheckBox(this);
-            c.setId(i);
-            c.setText("Can Pass");
-            l2.addView(c);
-            cbTeleop.add(c);
-
-            c = new CheckBox(this);
-            c.setId(i);
-            c.setText("Can Shoot");
-            l2.addView(c);
-            cbTeleop.add(c);
-
-            l1.addView(l2);
-
-            newDivider(10, l1);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-            l2.setGravity(Gravity.CENTER_HORIZONTAL);
-
-            LinearLayout l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Total Shots:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-
-            l2.addView(l3);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Ground Goal:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-
-            l2.addView(l3);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Top Goal:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-
-            l2.addView(l3);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Hot Goal:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-
-            l2.addView(l3);
-
-
-            l1.addView(l2);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Truss Shots:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-            l2.addView(l3);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Total Catches:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-            l2.addView(l3);
-
-            l3 = new LinearLayout(this);
-            l3.setOrientation(LinearLayout.VERTICAL);
-
-            newTextView("Total Score:   ", l3);
-
-            np = new NumberPicker(this);
-            np.setId(i);
-            np.setValue(0);
-            np.setMinValue(0);
-            np.setMaxValue(99);
-            np.setWrapSelectorWheel(false);
-            l3.addView(np);
-            teleopnp.add(np);
-            l2.addView(l3);
-
-            l1.addView(l2);
-
-            ll.addView(l1);
-        }
-        newDivider(Color.RED,5,ll);
-//        newDivider(5,ll);
-
-        for(int i = 0; i<teamsToScout.size();i++){
-
-            l1 = new LinearLayout(this);
-            l1.setOrientation(LinearLayout.VERTICAL);
-
-            newDivider(Color.WHITE, 5, l1);
-            newTextViewTitle(teamsToScout.get(i)+" - Post-Game", 17, l1);
-
-            newTextView("Final Notes:",l1);
-
-            e = new EditText(this);
-            e.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
-            e.setId(i);
-            l1.addView(e);
-            notes.add(e);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-
-            newTextView("Final Blue Alliance Score:", l2);
-
-            e = new EditText(this);
-            e.setId(i);
-            e.setLayoutParams(new LayoutParams(150,LayoutParams.WRAP_CONTENT));
-            e.setInputType(InputType.TYPE_CLASS_NUMBER);
-            l2.addView(e);
-            totalScores.add(e);
-
-            l1.addView(l2);
-
-            newDivider(15, ll);
-
-            l2 = new LinearLayout(this);
-            l2.setOrientation(LinearLayout.HORIZONTAL);
-
-            newTextView("Final Red Alliance Score:", l2);
-
-            e = new EditText(this);
-            e.setId(i);
-            e.setLayoutParams(new LayoutParams(150,LayoutParams.WRAP_CONTENT));
-            e.setInputType(InputType.TYPE_CLASS_NUMBER);
-            l2.addView(e);
-            totalScores.add(e);
-
-            l1.addView(l2);
-
-            newDivider(15, ll);
-
-            ll.addView(l1);
-
-        }
-        newDivider(Color.WHITE,5,ll);
-
-        l1 = new LinearLayout(this);
-        l1.setOrientation(LinearLayout.VERTICAL);
-        l1.setGravity(Gravity.CENTER_HORIZONTAL);
-
-        b1 = new Button(this);
-        b1.setText("Done");
-        b1.setLayoutParams(new LayoutParams(100,LayoutParams.WRAP_CONTENT));
-        b1.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                ArrayList<Integer> redAlliance = new ArrayList<Integer>();
-                ArrayList<Integer> blueAlliance = new ArrayList<Integer>();
-                ArrayList<Integer> autoScoresIntegers = new ArrayList<Integer>();
-                ArrayList<Boolean> autoAttemptBoolean = new ArrayList<Boolean>();
-
-                ArrayList<String> info = dh.getJSONArrayFromMatch(fileName,matchNum,"teams");
-
-                redAlliance.add(Integer.parseInt(info.get(0)));
-                redAlliance.add(Integer.parseInt(info.get(1)));
-                redAlliance.add(Integer.parseInt(info.get(2)));
-                blueAlliance.add(Integer.parseInt(info.get(0)));
-                blueAlliance.add(Integer.parseInt(info.get(1)));
-                blueAlliance.add(Integer.parseInt(info.get(2)));
-
-                for(RadioGroup rg:autonomousShot){
-                    switch(rg.getCheckedRadioButtonId()){
-                        case 0: autoScoresIntegers.add(0);
-                            break;
-                        case 1: autoScoresIntegers.add(6);
-                            break;
-                        case 2: autoScoresIntegers.add(15);
-                            break;
-                    }
-                }
-                int i = 0;
-                for(CheckBox c:autoHot){
-                    if(c.isChecked()){
-                        autoScoresIntegers.set(i,autoScoresIntegers.get(i)+5);
-                    }
-                    i++;
-                }
-
-                for(CheckBox c:autoAttempts){
-                    autoAttemptBoolean.add(c.isChecked());
-                }
-
-
-//                dh.saveScouting(fileName,matchNum,redAlliance,blueAlliance,autoScoresIntegers,autoAttemptBoolean,autoNotes);
+        ArrayList<RadioGroup> radioGroups = new ArrayList<RadioGroup>();
+        final ArrayList<View> autonomousViews = new ArrayList<View>();
+        gui.newTextViewTitle(this, "Match Numer " + matchNum + "", 35, ll);// displays the match #
+
+        ArrayList<String> teams = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
+        String teamsS = "";
+        for(int x = 0;x<teams.size();x++){// Formats the array to a pretty string
+            if(teamsS.equals("")){
+                teamsS = teamsS+teams.get(x);
+            }else{
+                teamsS = teamsS+", "+teams.get(x);
             }
-        });
+        }
 
-        l1.addView(b1);
-        ll.addView(l1);
+        gui.newTextViewTitle(this, teamsS, 30, ll); // displays the teams they need to scout
+
+        gui.newTextViewTitle(this,fileName,25,ll); // Displays the schedule name to user
+
+        //show picture of robots (planned feature)
+
+        gui.newDivider(this,Color.BLUE,10,ll);
+        gui.newTextViewTitle(this,"Autonomous",30,ll); // Starts the Autonomous area
+        gui.newDivider(this,Color.BLUE,10,ll);
+
+        for(int x = 0; x<teams.size(); x++){ // iterates through the teams to make an area for each team
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+            l1.setGravity(Gravity.CENTER_HORIZONTAL);
+            gui.newDivider(this,Color.BLUE,10,l1);
+            gui.newTextViewTitle(this,teams.get(x),20,l1);
+            gui.newMultipleChoice(this, l1, radioGroups, "Does it have an autonomous?", "Yes", "No").setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    if(radioGroup.getCheckedRadioButtonId()==2){
+                        for(View v: autonomousViews){
+                            v.setEnabled(false);
+                        }
+                    }else{
+                        for(View v: autonomousViews){
+                            v.setEnabled(false);
+                        }
+                    }
+                }
+            });
+
+            gui.newMultipleChoice(this,l1,autonomousViews,"What goal did it shoot for?", "None", "High","Hot","Low");
+
+            gui.newMultipleChoice(this,l1,autonomousViews,"Did it shoot for double?", "Yes", "No");
+
+            ll.addView(l1);
+        }
 
     }
 
     /**
      * <p/>
-     * Adds a section used for imputing a match. Uses matchNum to display the match number and ll is the linear layout used to add the components to.
+     * Adds a section used for imputing a match. Uses matchNum to display the match number and ll
+     * is the linear layout used to add the components to.
      */
     void newMatch(int matchNum, int numOfMatches, LinearLayout ll) {
         loopTimes = matchNum;
