@@ -48,12 +48,25 @@
         android:id="@+id/ClientB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/newScheduleB"
+        android:layout_below="@+id/PitScoutB"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:minHeight="32dp"
         android:minWidth="96dp"
         android:text="Scout"
+        android:textSize="15sp"
+        android:layout_gravity="center_horizontal" />
+
+    <Button
+        android:id="@+id/PitScoutB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/newScheduleB"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:minHeight="32dp"
+        android:minWidth="96dp"
+        android:text="Pit Scout"
         android:textSize="15sp"
         android:layout_gravity="center_horizontal" />
 

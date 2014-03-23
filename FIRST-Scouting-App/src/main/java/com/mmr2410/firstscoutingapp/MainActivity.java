@@ -30,6 +30,7 @@ import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -161,6 +162,7 @@ public class MainActivity extends ActionBarActivity {
         currentScreen = R.layout.activity_main;
         hostB = (Button) findViewById(R.id.newScheduleB);
         clientB = (Button) findViewById(R.id.ClientB);
+        Button pitScoutB = (Button) findViewById(R.id.PitScoutB);
         sendB = (Button)findViewById(R.id.SendB);
         settingsB = (Button) findViewById(R.id.SettingsB);
         hostB.setOnClickListener(new View.OnClickListener() {
@@ -175,6 +177,12 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
+        pitScoutB.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toPitScouting();
+            }
+        }); // Will be moved to inside scouting screen at some point
         sendB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 toSendScreen();
@@ -646,8 +654,10 @@ public class MainActivity extends ActionBarActivity {
         contentViews.add(R.layout.scouting);
         ll = (LinearLayout)findViewById(R.id.scoutingLayout);
 
-        ArrayList<RadioGroup> radioGroups = new ArrayList<RadioGroup>();
-        final ArrayList<View> autonomousViews = new ArrayList<View>();
+        final ArrayList<RadioGroup> autonomousRadioGroups = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> teleopRadioGroups = new ArrayList<RadioGroup>();
+        final ArrayList<ArrayList<View>> autonomousViews = new ArrayList<ArrayList<View>>();
+        final ArrayList<ArrayList<View>> teleopViews = new ArrayList<ArrayList<View>>();
         gui.newTextViewTitle(this, "Match Numer " + matchNum + "", 35, ll);// displays the match #
 
         ArrayList<String> teams = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
@@ -666,37 +676,211 @@ public class MainActivity extends ActionBarActivity {
 
         //show picture of robots (planned feature)
 
-        gui.newDivider(this,Color.BLUE,10,ll);
-        gui.newTextViewTitle(this,"Autonomous",30,ll); // Starts the Autonomous area
-        gui.newDivider(this,Color.BLUE,10,ll);
+        gui.newDivider(this, Color.BLUE, 10, ll);
+        gui.newTextViewTitle(this, "Autonomous", 30, ll); // Starts the Autonomous area
 
-        for(int x = 0; x<teams.size(); x++){ // iterates through the teams to make an area for each team
+        ArrayList<View> views;
+
+        for(int x = 0; x<teams.size(); x++){ // iterates through the teams to make an area for each team for autonomous
+            // Maybe show its picture here somewhere
+            views = new ArrayList<View>();
             l1 = new LinearLayout(this);
             l1.setOrientation(LinearLayout.VERTICAL);
             l1.setGravity(Gravity.CENTER_HORIZONTAL);
             gui.newDivider(this,Color.BLUE,10,l1);
             gui.newTextViewTitle(this,teams.get(x),20,l1);
-            gui.newMultipleChoice(this, l1, radioGroups, "Does it have an autonomous?", "Yes", "No").setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            RadioGroup autoRun = gui.newMultipleChoice(this, l1, null, "Does it have an autonomous?", "Yes", "No");
+            autoRun.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    int a = 0;
+                    int b = 0;
+                    for (RadioGroup rg : autonomousRadioGroups) {
+                        if (radioGroup == rg) {
+                            b = a;
+                        }
+                        a++;
+                    }
+                    if (radioGroup.getCheckedRadioButtonId() == 2) {
+                        for (View v : autonomousViews.get(b)) {
+                            v.setEnabled(false);
+                        }
+                    } else {
+                        for (View v : autonomousViews.get(b)) {
+                            v.setEnabled(true);
+                        }
+                    }
+                }
+            });
+            autonomousRadioGroups.add(autoRun);
+
+            gui.newMultipleChoice(this,l1,views,"Did it move to its zone?","Yes","No");
+
+            gui.newMultipleChoice(this,l1,views,"What goal did it shoot for?", "None", "High","Hot","Low");
+
+            gui.newMultipleChoice(this,l1,views,"Did it shoot for double?", "Yes", "No");
+
+            gui.newNotesSection(this,l1,views, "Notes:");
+
+            ll.addView(l1);
+            autonomousViews.add(views);
+        }
+
+        gui.newDivider(this, Color.RED, 10, ll);
+        gui.newTextViewTitle(this, "Teleop", 30, ll); // Starts the Teleop area
+
+        for(int x = 0; x<teams.size(); x++){// iterates through the teams to make an area for each team, this time for teleop
+            // Maybe also show its picture here
+            views = new ArrayList<View>();
+            l1 = new LinearLayout(this);
+            l1.setOrientation(LinearLayout.VERTICAL);
+            l1.setGravity(Gravity.CENTER_HORIZONTAL);
+            gui.newDivider(this,Color.RED,10,l1);
+            gui.newTextViewTitle(this,teams.get(x),20,l1);
+
+            RadioGroup teleRun = gui.newMultipleChoice(this, l1, null, "Does it run?", "Yes", "No");
+            teleRun.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    int a = 0;
+                    int b = 0;
+                    for(RadioGroup rg: teleopRadioGroups){
+                        if(radioGroup==rg){
+                            b = a;
+                        }
+                        a++;
+                    }
                     if(radioGroup.getCheckedRadioButtonId()==2){
-                        for(View v: autonomousViews){
+                        for(View v: teleopViews.get(b)){
                             v.setEnabled(false);
                         }
                     }else{
-                        for(View v: autonomousViews){
-                            v.setEnabled(false);
+                        for(View v: teleopViews.get(b)){
+                            v.setEnabled(true);
+                        }
+                    }
+                }
+            });
+            teleopRadioGroups.add(teleRun);
+
+            RadioGroup pickup = gui.newMultipleChoice(this,l1,views,"Can it pick up the ball?", "Yes", "No");
+
+            final RadioGroup pickupScale = gui.newScale(this,l1,views,"How well can it pick things up?","Hardly","Very Well",5);
+
+            pickup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    if(pickupScale != null){
+                        if(radioGroup.getCheckedRadioButtonId() == 2){
+                            for(int x = 1; x<pickupScale.getChildCount()-1;x++){
+                                pickupScale.getChildAt(x).setEnabled(false);
+                            }
+                        }else{
+                            for(int x = 1; x<pickupScale.getChildCount()-1;x++){
+                                pickupScale.getChildAt(x).setEnabled(true);
+                            }
                         }
                     }
                 }
             });
 
-            gui.newMultipleChoice(this,l1,autonomousViews,"What goal did it shoot for?", "None", "High","Hot","Low");
+            gui.newCheckBoxes(this, l1, views, gui.ORIENTATION_VERTICAL, "What goals did they shoot at?", "High", "Low", "Truss");
 
-            gui.newMultipleChoice(this,l1,autonomousViews,"Did it shoot for double?", "Yes", "No");
+            gui.newMultipleChoice(this, l1, views, "What did they shoot at the most?", "High", "Low", "Truss");
+
+            RadioGroup canCatch = gui.newMultipleChoice(this, l1, views, "Can it catch", "Yes", "No");
+
+            final LinearLayout catchCount = gui.newCounter(this, l1, views, "Times passed");
+
+            canCatch.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    if(radioGroup.getCheckedRadioButtonId()==2){
+                        for(int x = 0; x<catchCount.getChildCount();x++){
+                            if(catchCount.getChildAt(x).getId()==1){
+                                LinearLayout l = (LinearLayout)catchCount.getChildAt(x);
+                                for( int y = 0; y<l.getChildCount();y++){
+                                    l.getChildAt(y).setEnabled(false);
+                                }
+                            }
+                        }
+                    }else {
+                        for (int x = 0; x < catchCount.getChildCount(); x++) {
+                            if (catchCount.getChildAt(x).getId() == 1) {
+                                LinearLayout l = (LinearLayout) catchCount.getChildAt(x);
+                                for (int y = 0; y < l.getChildCount(); y++) {
+                                    l.getChildAt(y).setEnabled(true);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            gui.newScale(this,l1,views,"How well does it drive?","Terrible","Awesome",5);
+
+            gui.newNotesSection(this,l1,views,"Final Notes:");
 
             ll.addView(l1);
+            teleopViews.add(views);
         }
+
+        Button submitB = new Button(this);
+        submitB.setText("Submit");
+//        submitB.setOnClickListener(new OnClickListener() { //saves all data
+//            @Override
+//            public void onClick(View view) {
+//
+//            }
+//        });
+
+    }
+
+    public void toPitScoutingPicker(){ //need the list of teams to do this
+        ScrollView pitScoutPickerLayout = new ScrollView(this);
+        setContentView(pitScoutPickerLayout);
+
+        LinearLayout ll = new LinearLayout(this);
+
+        pitScoutPickerLayout.addView(ll);
+    }
+
+    public void toPitScouting(){ //May need to add/remove some stuff
+        ScrollView pitScoutLayout = new ScrollView(this);
+        setContentView(pitScoutLayout);
+
+        LinearLayout ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+
+        ArrayList<View> views = new ArrayList<View>();
+
+        gui.newNotesSection(this,ll,views,"Team Number:");
+
+        gui.newMultipleChoice(this, ll, views, "Was it built for offense?", "Yes", "No");
+
+        gui.newMultipleChoice(this,ll,views,"Was it built for defense?","Yes","No");
+
+        gui.newMultipleChoice(this,ll,views,"Does it have a device to pick balls up?","Yes","No");
+
+        gui.newMultipleChoice(this,ll,views,"Can it catch balls?","Yes","No");
+
+        gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What goals can it shoot?", "High","Low","Hot (can detect and shoot for it)");
+
+        // May need to add more or remove some
+        gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What drive train does it have?","Mechinum","Kit Wheels","Omni", "Holonomic","Swerve/Crab","Treads","Caster","Six Wheel");
+
+        gui.newNotesSection(this,ll,views,"Notes:");
+
+        Button submit = new Button(this);
+        submit.setText("Submit");
+//        submit.setOnClickListener(new OnClickListener() { //needs to save data
+//            @Override
+//            public void onClick(View view) {
+//
+//            }
+//        });
+
+        pitScoutLayout.addView(ll);
 
     }
 
