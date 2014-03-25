@@ -649,7 +649,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void toScouting(String fileName, int matchNum){
+    public void toScouting(final String fileName, final int matchNum){
         setContentView(R.layout.scouting);
         contentViews.add(R.layout.scouting);
         ll = (LinearLayout)findViewById(R.id.scoutingLayout);
@@ -658,9 +658,24 @@ public class MainActivity extends ActionBarActivity {
         final ArrayList<RadioGroup> teleopRadioGroups = new ArrayList<RadioGroup>();
         final ArrayList<ArrayList<View>> autonomousViews = new ArrayList<ArrayList<View>>();
         final ArrayList<ArrayList<View>> teleopViews = new ArrayList<ArrayList<View>>();
+
+        final ArrayList<RadioGroup> autoMoves = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> autoRuns = new ArrayList<RadioGroup>(); // I know this isn't the best names, but its rushed.
+        final ArrayList<RadioGroup> autoShot = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> autoDouble = new ArrayList<RadioGroup>();
+        final ArrayList<EditText> autoNotes = new ArrayList<EditText>();
+
+        final ArrayList<RadioGroup> teleRuns = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> pickupBool  = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> pickupScales = new ArrayList<RadioGroup>();
+        final ArrayList<LinearLayout> teleGoals = new ArrayList<LinearLayout>();
+        final ArrayList<RadioGroup> teleGoalMost = new ArrayList<RadioGroup>();
+        final ArrayList<RadioGroup> teleCatchBools = new ArrayList<RadioGroup>();
+        final ArrayList<LinearLayout> telePass = new ArrayList<LinearLayout>();
+
         gui.newTextViewTitle(this, "Match Numer " + matchNum + "", 35, ll);// displays the match #
 
-        ArrayList<String> teams = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
+        final ArrayList<String> teams = dh.getJSONArrayFromMatch(fileName,0,"teamsscouted");
         String teamsS = "";
         for(int x = 0;x<teams.size();x++){// Formats the array to a pretty string
             if(teamsS.equals("")){
@@ -713,14 +728,15 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
             autonomousRadioGroups.add(autoRun);
+            autoRuns.add(autoRun);
 
-            gui.newMultipleChoice(this,l1,views,"Did it move to its zone?","Yes","No");
+            autoMoves.add(gui.newMultipleChoice(this,l1,views,"Did it move to its zone?","Yes","No"));
 
-            gui.newMultipleChoice(this,l1,views,"What goal did it shoot for?", "None", "High","Hot","Low");
+            autoShot.add(gui.newMultipleChoice(this,l1,views,"What goal did it shoot for?", "None", "High","Hot","Low"));
 
-            gui.newMultipleChoice(this,l1,views,"Did it shoot for double?", "Yes", "No");
+            autoDouble.add(gui.newMultipleChoice(this,l1,views,"Did it shoot for double?", "Yes", "No"));
 
-            gui.newNotesSection(this,l1,views, "Notes:");
+            autoNotes.add(gui.newNotesSection(this,l1,views, "Notes:"));
 
             ll.addView(l1);
             autonomousViews.add(views);
@@ -762,10 +778,13 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
             teleopRadioGroups.add(teleRun);
+            teleRuns.add(teleRun);
 
             RadioGroup pickup = gui.newMultipleChoice(this,l1,views,"Can it pick up the ball?", "Yes", "No");
 
             final RadioGroup pickupScale = gui.newScale(this,l1,views,"How well can it pick things up?","Hardly","Very Well",5);
+
+            pickupScales.add(pickupScale);
 
             pickup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                 @Override
@@ -784,38 +803,19 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
-            gui.newCheckBoxes(this, l1, views, gui.ORIENTATION_VERTICAL, "What goals did they shoot at?", "High", "Low", "Truss");
+            pickupBool.add(pickup);
 
-            gui.newMultipleChoice(this, l1, views, "What did they shoot at the most?", "High", "Low", "Truss");
+            teleGoals.add(gui.newCheckBoxes(this, l1, views, gui.ORIENTATION_VERTICAL, "What goals did they shoot at?", "High", "Low", "Truss"));
+
+            teleGoalMost.add(gui.newMultipleChoice(this, l1, views, "What did they shoot at the most?", "High", "Low", "Truss"));
 
             RadioGroup canCatch = gui.newMultipleChoice(this, l1, views, "Can it catch", "Yes", "No");
 
-            final LinearLayout catchCount = gui.newCounter(this, l1, views, "Times passed");
+            teleCatchBools.add(canCatch);
 
-            canCatch.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                    if(radioGroup.getCheckedRadioButtonId()==2){
-                        for(int x = 0; x<catchCount.getChildCount();x++){
-                            if(catchCount.getChildAt(x).getId()==1){
-                                LinearLayout l = (LinearLayout)catchCount.getChildAt(x);
-                                for( int y = 0; y<l.getChildCount();y++){
-                                    l.getChildAt(y).setEnabled(false);
-                                }
-                            }
-                        }
-                    }else {
-                        for (int x = 0; x < catchCount.getChildCount(); x++) {
-                            if (catchCount.getChildAt(x).getId() == 1) {
-                                LinearLayout l = (LinearLayout) catchCount.getChildAt(x);
-                                for (int y = 0; y < l.getChildCount(); y++) {
-                                    l.getChildAt(y).setEnabled(true);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            final LinearLayout passCount = gui.newCounter(this, l1, views, "Times passed");
+
+            telePass.add(passCount);
 
             gui.newScale(this,l1,views,"How well does it drive?","Terrible","Awesome",5);
 
@@ -827,12 +827,45 @@ public class MainActivity extends ActionBarActivity {
 
         Button submitB = new Button(this);
         submitB.setText("Submit");
-//        submitB.setOnClickListener(new OnClickListener() { //saves all data
-//            @Override
-//            public void onClick(View view) {
-//
-//            }
-//        });
+        submitB.setOnClickListener(new OnClickListener() { //saves all data
+            @Override
+            public void onClick(View view) {
+                tempFile = new File(fileLocation+"matchdata/"+fileName);
+                try {
+                    tempFile.createNewFile();
+                    fos = new FileOutputStream(tempFile);
+                } catch (IOException e) {
+                    Log.e(tag,"Failed to create file in matchdata when submitting scouting data");
+                }
+                for(int x = 0; x<teams.size();x++){
+                    if(x>0){
+                        dh.newJSONObject();
+                    }
+                    dh.newJSONName("matchNum",matchNum);
+                    dh.newJSONName("teamNumber",teams.get(x));
+                    dh.newJSONName("autoRuns",autoRuns.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("autoMoves",autoMoves.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("autoShot",autoShot.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("autoDouble",autoDouble.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("autoNotes",autoNotes.get(x).getText().toString());
+                    dh.newJSONName("teleRuns",teleRuns.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("pickupBool",pickupBool.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("pickupScale",pickupScales.get(x).getCheckedRadioButtonId());
+                    ArrayList info = new ArrayList();
+                    for(int y = 0;y<teleGoals.get(x).getChildCount();y++){
+                        CheckBox cb = (CheckBox)teleGoals.get(x).getChildAt(y);
+                        if(cb.isChecked()){
+                            info.add(y);
+                        }
+                    }
+                    dh.newJSONName("teleGoals",info);
+                    //More needs to be added
+                    dh.endJSONObject();
+                }
+                dh.endJSON();
+
+            }
+        });
 
     }
 

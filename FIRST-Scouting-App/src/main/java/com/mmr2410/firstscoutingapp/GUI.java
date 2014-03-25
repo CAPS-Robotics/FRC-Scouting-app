@@ -108,7 +108,7 @@ public class GUI {
         return rg;
     }
 
-    public LinearLayout newNotesSection(android.content.Context context, LinearLayout ll, ArrayList rgs, String question){
+    public EditText newNotesSection(android.content.Context context, LinearLayout ll, ArrayList rgs, String question){
         LinearLayout l1 = new LinearLayout(context);
 
         rgs.add(newTextView(context, question, l1));
@@ -121,7 +121,7 @@ public class GUI {
 
         ll.addView(l1);
 
-        return l1;
+        return textField;
     }
 
     public RadioGroup newScale(android.content.Context context, LinearLayout ll, ArrayList list, String question, String lowestRating, String highestRating, int scaleSize){
@@ -213,7 +213,7 @@ public class GUI {
 
         ll.addView(l1);
 
-        return l1;
+        return l2;
     }
 
 

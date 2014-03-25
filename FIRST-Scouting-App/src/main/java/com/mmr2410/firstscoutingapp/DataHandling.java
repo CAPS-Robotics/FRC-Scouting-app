@@ -167,12 +167,12 @@ public class DataHandling {
         }
     }
 
-    public void newJSONName(String var,ArrayList<String> content){
+    public void newJSONName(String var,ArrayList content){
         try {
             jwriter.name(var);
             jwriter.beginArray();
-            for(String s:content){
-                jwriter.value(s);
+            for(Object o:content){
+                jwriter.value(o+"");
             }
             jwriter.endArray();
         } catch (IOException e) {
