@@ -415,4 +415,50 @@ public class DataHandling {
 
         Log.d(tag,"saved");
     }
+    
+    /**
+     * Will merge all files in a directory to a single file (name specified), will delete previous files if deleteIndividuleFiles is true.
+     * Specify full path with directory param.
+     */
+    public File mergeFilesInDir(String directory, String fileName, Boolean deleteIndividuleFiles){
+        
+        File dir = new File(directory);
+        
+        File[] files = dir.listFiles();
+        
+        FileInputStream fis;
+        
+        File finalFile = new File(directory,fileName);
+        
+        FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			fstream = new FileWriter(finalFile, true);
+			 out = new BufferedWriter(fstream);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+        
+        for(File f: files){
+            try {
+				fis = new FileInputStream(f);
+				BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+ 
+				String aLine;
+				while ((aLine = in.readLine()) != null) {
+					out.write(aLine);
+					out.newLine();
+				}
+ 
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+            
+        }
+        
+        return finalFile;
+        
+    }
+    
 }

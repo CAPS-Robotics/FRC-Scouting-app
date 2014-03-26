@@ -994,6 +994,15 @@ public class MainActivity extends ActionBarActivity {
         pitScoutLayout.addView(ll);
 
     }
+    
+    public toAnalytics(){
+        //compile files here
+        dh.mergeFilesInDir(fileLocation + "pitdata/","compiled",false);
+        
+        LinearLayout analyticsLayout = new LinearLayout(this);
+        
+        setContentView(analyticsLayout);
+    }
 
     /**
      * <p/>
