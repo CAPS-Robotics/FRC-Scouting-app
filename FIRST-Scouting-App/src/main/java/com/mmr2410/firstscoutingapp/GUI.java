@@ -217,7 +217,7 @@ public class GUI {
     }
 
 
-    public LinearLayout newCounter(android.content.Context context, LinearLayout ll, ArrayList list, String s) {
+    public TextView newCounter(android.content.Context context, LinearLayout ll, ArrayList list, String s) {
 
         counterCount.add(0);
 
@@ -285,6 +285,6 @@ public class GUI {
         l1.addView(l3);
         ll.addView(l1);
 
-        return l1;
+        return countView;
     }
 }

@@ -1,5 +1,6 @@
 package com.mmr2410.firstscoutingapp;
 
+import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -85,11 +86,13 @@ public class MainActivity extends ActionBarActivity {
 //        setTheme(android.R.style.Theme_Black);
         super.onCreate(savedInstanceState);
         try{
-            tempFile = new File(fileLocation);
+            tempFile = new File(fileLocation); //create the directories where we are going to be keeping the data
             tempFile.mkdirs();
             tempFile = new File(fileLocation+"schedules");
             tempFile.mkdirs();
             tempFile = new File(fileLocation+"matchdata");
+            tempFile.mkdirs();
+            tempFile = new File(fileLocation+"pitdata");
             tempFile.mkdirs();
         }catch(Exception e){Log.e(tag,e.toString());}
         bt = new Bluetooth(this);
@@ -671,7 +674,7 @@ public class MainActivity extends ActionBarActivity {
         final ArrayList<LinearLayout> teleGoals = new ArrayList<LinearLayout>();
         final ArrayList<RadioGroup> teleGoalMost = new ArrayList<RadioGroup>();
         final ArrayList<RadioGroup> teleCatchBools = new ArrayList<RadioGroup>();
-        final ArrayList<TextView> telePass = new ArrayList<LinearLayout>();
+        final ArrayList<TextView> telePass = new ArrayList<TextView>();
         final ArrayList<RadioGroup> teleDriveScale = new ArrayList<RadioGroup>();
         final ArrayList<EditText> finalNotes = new ArrayList<EditText>();
 
@@ -815,13 +818,13 @@ public class MainActivity extends ActionBarActivity {
 
             teleCatchBools.add(canCatch);
 
-            final LinearLayout passCount = gui.newCounter(this, l1, views, "Times passed");
+            final TextView passCount = gui.newCounter(this, l1, views, "Times passed");
 
             telePass.add(passCount);
 
-            teleDriveScale.add(gui.newScale(this,l1,views,"How well does it drive?","Terrible","Awesome",5));
+            teleDriveScale.add(gui.newScale(this, l1, views, "How well does it drive?", "Terrible", "Awesome", 5));
 
-            finalNotes.add(gui.newNotesSection(this,l1,views,"Final Notes:"));
+            finalNotes.add(gui.newNotesSection(this, l1, views, "Final Notes:"));
 
             ll.addView(l1);
             teleopViews.add(views);
@@ -862,8 +865,8 @@ public class MainActivity extends ActionBarActivity {
                     }
                     dh.newJSONName("teleGoals",info);
                     dh.newJSONName("teleGoalMost",teleGoalMost.get(x).getCheckedRadioButtonId());
-                    dh.newJSONName("teleCatchBools",teleCatchBools.get(x).getCheckedRadioButtonId());
-                    dh.newJSONName("telePass",telePass.get(x).getText().toString();
+                    dh.newJSONName("teleCatchBools", teleCatchBools.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("telePass",telePass.get(x).getText().toString());
                     dh.newJSONName("teleDriveScale",teleDriveScale.get(x).getCheckedRadioButtonId());
                     dh.newJSONName("finalNotes",finalNotes.get(x).getText().toString());
                     
@@ -871,7 +874,7 @@ public class MainActivity extends ActionBarActivity {
                         dh.endJSONObject();
                     }
                 }
-                dh.endJSON()
+                dh.endJSON();
             }
         });
 
@@ -896,6 +899,7 @@ public class MainActivity extends ActionBarActivity {
         ArrayList<View> views = new ArrayList<View>();
 
         final EditText teamNum = gui.newNotesSection(this,ll,views,"Team Number:");
+        teamNum.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         final RadioGroup offense = gui.newMultipleChoice(this, ll, views, "Was it built for offense?", "Yes", "No");
 
@@ -907,50 +911,85 @@ public class MainActivity extends ActionBarActivity {
 
         final LinearLayout goals = gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What goals can it shoot?", "High","Low","Hot (can detect and shoot for it)");
         
-        final RadioGroup driveTrain = gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What drive train does it have?","Mechinum","Kit Wheels","Omni", "Holonomic","Swerve/Crab","Treads","Caster","Six Wheel");
+        final LinearLayout driveTrain = gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What drive train does it have?","Mechinum","Kit Wheels","Omni", "Holonomic","Swerve/Crab","Treads","Caster","Six Wheel");
 
         final EditText notes = gui.newNotesSection(this,ll,views,"Notes:");
+
+        gui.newDivider(MainActivity.this,50,ll);
 
         Button submit = new Button(this);
         submit.setText("Submit");
         submit.setOnClickListener(new OnClickListener() { //needs to save data
             @Override
             public void onClick(View view) {
-                tempFile = new File(fileLocation+"pitdata/"+teamNum.getText().toString());
-                try {
-                    tempFile.createNewFile();
-                    fos = new FileOutputStream(tempFile);
-                } catch (IOException e) {
-                    Log.e(tag,"Failed to create file in matchdata when submitting pit scouting data");
+
+                boolean continueSaving = true;
+                if (teamNum.getText().toString() == null||teamNum.getText().toString().equals("")||teamNum.getText().toString().equals(null)||!teamNum.getText().toString().matches("^[A-Za-z0-9]+$")) {
+
+                    Dialog dialog = new Dialog(MainActivity.this);
+
+                    LinearLayout ll = new LinearLayout(MainActivity.this);
+                    ll.setOrientation(LinearLayout.VERTICAL);
+                    ll.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+                    ll.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                    gui.newDivider(MainActivity.this,10,ll);
+
+                    gui.newTextViewTitle(MainActivity.this,"Please fill out the team number and check that you haven't missed anything else.",20,ll);
+
+                    gui.newDivider(MainActivity.this,10,ll);
+
+                    dialog.setTitle("Error");
+                    dialog.setContentView(ll);
+
+                    dialog.show();
+
+                    continueSaving = false;
                 }
-                
-                dh.newJSONName("teamNum",teamNum.getText().toString());
-                dh.newJSONName("offense",offense.getCheckedRadioButtonId());
-                dh.newJSONName("defense",defense.getCheckedRadioButtonId());
-                dh.newJSONName("ballPickup",ballPickup.getCheckedRadioButtonId());
-                dh.newJSONName("ballCatch",ballCatch.getCheckedRadioButtonId());
-                ArrayList info = new ArrayList();
-                for(int y = 0;y<goals.getChildCount();y++){
-                    CheckBox cb = goals.getChildAt(y);
-                    if(cb.isChecked()){
-                        info.add(y);
+                if(continueSaving){
+                    tempFile = new File(fileLocation + "pitdata/" + teamNum.getText().toString());
+                    try {
+                        tempFile.createNewFile();
+                        fos = new FileOutputStream(tempFile);
+                    } catch (IOException e) {
+                        Log.e(tag, "Failed to create file in matchdata when submitting pit scouting data");
                     }
-                }
-                dh.newJSONName("goals",info);
-                info = new ArrayList();
-                for(int y = 0;y<driveTrain.getChildCount();y++){
-                    CheckBox cb = driveTrain.getChildAt(y);
-                    if(cb.isChecked()){
-                        info.add(y);
+                    dh.beginJSON(fos);
+                    dh.newJSONName("teamNum", teamNum.getText().toString() + "");
+                    dh.newJSONName("offense", offense.getCheckedRadioButtonId());
+                    dh.newJSONName("defense", defense.getCheckedRadioButtonId());
+                    dh.newJSONName("ballPickup", ballPickup.getCheckedRadioButtonId());
+                    dh.newJSONName("ballCatch", ballCatch.getCheckedRadioButtonId());
+                    ArrayList info = new ArrayList();
+                    for (int y = 0; y < goals.getChildCount(); y++) {
+                        CheckBox cb = (CheckBox) goals.getChildAt(y);
+                        if (cb.isChecked()) {
+                            info.add(y);
+                        }
                     }
+                    dh.newJSONName("goals", info);
+                    info = new ArrayList();
+                    for (int y = 0; y < driveTrain.getChildCount(); y++) {
+                        CheckBox cb = (CheckBox) driveTrain.getChildAt(y);
+                        if (cb.isChecked()) {
+                            info.add(y);
+                        }
+                    }
+                    dh.newJSONName("driveTrain", info);
+                    if(notes.getText().toString()==null){
+                        dh.newJSONName("notes", " ");
+                    }else{
+                        dh.newJSONName("notes", notes.getText().toString());
+                    }
+
+                    dh.endJSON();
+
+                    toPitScouting();
                 }
-                dh.newJSONName("driveTrain",info);
-                dh.newJSONName("notes",notes.getText().toString());
-                
-                dh.endJSON();
 
             }
         });
+        ll.addView(submit);
 
         pitScoutLayout.addView(ll);
 
