@@ -671,7 +671,9 @@ public class MainActivity extends ActionBarActivity {
         final ArrayList<LinearLayout> teleGoals = new ArrayList<LinearLayout>();
         final ArrayList<RadioGroup> teleGoalMost = new ArrayList<RadioGroup>();
         final ArrayList<RadioGroup> teleCatchBools = new ArrayList<RadioGroup>();
-        final ArrayList<LinearLayout> telePass = new ArrayList<LinearLayout>();
+        final ArrayList<TextView> telePass = new ArrayList<LinearLayout>();
+        final ArrayList<RadioGroup> teleDriveScale = new ArrayList<RadioGroup>();
+        final ArrayList<EditText> finalNotes = new ArrayList<EditText>();
 
         gui.newTextViewTitle(this, "Match Numer " + matchNum + "", 35, ll);// displays the match #
 
@@ -817,9 +819,9 @@ public class MainActivity extends ActionBarActivity {
 
             telePass.add(passCount);
 
-            gui.newScale(this,l1,views,"How well does it drive?","Terrible","Awesome",5);
+            teleDriveScale.add(gui.newScale(this,l1,views,"How well does it drive?","Terrible","Awesome",5));
 
-            gui.newNotesSection(this,l1,views,"Final Notes:");
+            finalNotes.add(gui.newNotesSection(this,l1,views,"Final Notes:"));
 
             ll.addView(l1);
             teleopViews.add(views);
@@ -838,7 +840,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.e(tag,"Failed to create file in matchdata when submitting scouting data");
                 }
                 for(int x = 0; x<teams.size();x++){
-                    if(x>0){
+                    if(x!=0){
                         dh.newJSONObject();
                     }
                     dh.newJSONName("matchNum",matchNum);
@@ -859,11 +861,17 @@ public class MainActivity extends ActionBarActivity {
                         }
                     }
                     dh.newJSONName("teleGoals",info);
-                    //More needs to be added
-                    dh.endJSONObject();
+                    dh.newJSONName("teleGoalMost",teleGoalMost.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("teleCatchBools",teleCatchBools.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("telePass",telePass.get(x).getText().toString();
+                    dh.newJSONName("teleDriveScale",teleDriveScale.get(x).getCheckedRadioButtonId());
+                    dh.newJSONName("finalNotes",finalNotes.get(x).getText().toString());
+                    
+                    if(!(x==teams.size()-1)){
+                        dh.endJSONObject();
+                    }
                 }
-                dh.endJSON();
-
+                dh.endJSON()
             }
         });
 
@@ -887,31 +895,62 @@ public class MainActivity extends ActionBarActivity {
 
         ArrayList<View> views = new ArrayList<View>();
 
-        gui.newNotesSection(this,ll,views,"Team Number:");
+        final EditText teamNum = gui.newNotesSection(this,ll,views,"Team Number:");
 
-        gui.newMultipleChoice(this, ll, views, "Was it built for offense?", "Yes", "No");
+        final RadioGroup offense = gui.newMultipleChoice(this, ll, views, "Was it built for offense?", "Yes", "No");
 
-        gui.newMultipleChoice(this,ll,views,"Was it built for defense?","Yes","No");
+        final RadioGroup defense = gui.newMultipleChoice(this,ll,views,"Was it built for defense?","Yes","No");
 
-        gui.newMultipleChoice(this,ll,views,"Does it have a device to pick balls up?","Yes","No");
+        final RadioGroup ballPickup = gui.newMultipleChoice(this,ll,views,"Does it have a device to pick balls up?","Yes","No");
 
-        gui.newMultipleChoice(this,ll,views,"Can it catch balls?","Yes","No");
+        final RadioGroup ballCatch = gui.newMultipleChoice(this,ll,views,"Can it catch balls?","Yes","No");
 
-        gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What goals can it shoot?", "High","Low","Hot (can detect and shoot for it)");
+        final LinearLayout goals = gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What goals can it shoot?", "High","Low","Hot (can detect and shoot for it)");
+        
+        final RadioGroup driveTrain = gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What drive train does it have?","Mechinum","Kit Wheels","Omni", "Holonomic","Swerve/Crab","Treads","Caster","Six Wheel");
 
-        // May need to add more or remove some
-        gui.newCheckBoxes(this,ll,views,gui.ORIENTATION_VERTICAL,"What drive train does it have?","Mechinum","Kit Wheels","Omni", "Holonomic","Swerve/Crab","Treads","Caster","Six Wheel");
-
-        gui.newNotesSection(this,ll,views,"Notes:");
+        final EditText notes = gui.newNotesSection(this,ll,views,"Notes:");
 
         Button submit = new Button(this);
         submit.setText("Submit");
-//        submit.setOnClickListener(new OnClickListener() { //needs to save data
-//            @Override
-//            public void onClick(View view) {
-//
-//            }
-//        });
+        submit.setOnClickListener(new OnClickListener() { //needs to save data
+            @Override
+            public void onClick(View view) {
+                tempFile = new File(fileLocation+"pitdata/"+teamNum.getText().toString());
+                try {
+                    tempFile.createNewFile();
+                    fos = new FileOutputStream(tempFile);
+                } catch (IOException e) {
+                    Log.e(tag,"Failed to create file in matchdata when submitting pit scouting data");
+                }
+                
+                dh.newJSONName("teamNum",teamNum.getText().toString());
+                dh.newJSONName("offense",offense.getCheckedRadioButtonId());
+                dh.newJSONName("defense",defense.getCheckedRadioButtonId());
+                dh.newJSONName("ballPickup",ballPickup.getCheckedRadioButtonId());
+                dh.newJSONName("ballCatch",ballCatch.getCheckedRadioButtonId());
+                ArrayList info = new ArrayList();
+                for(int y = 0;y<goals.getChildCount();y++){
+                    CheckBox cb = goals.getChildAt(y);
+                    if(cb.isChecked()){
+                        info.add(y);
+                    }
+                }
+                dh.newJSONName("goals",info);
+                info = new ArrayList();
+                for(int y = 0;y<driveTrain.getChildCount();y++){
+                    CheckBox cb = driveTrain.getChildAt(y);
+                    if(cb.isChecked()){
+                        info.add(y);
+                    }
+                }
+                dh.newJSONName("driveTrain",info);
+                dh.newJSONName("notes",notes.getText().toString());
+                
+                dh.endJSON();
+
+            }
+        });
 
         pitScoutLayout.addView(ll);
 
