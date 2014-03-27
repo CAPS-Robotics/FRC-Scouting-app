@@ -74,12 +74,25 @@
         android:id="@+id/SendB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/newScheduleB"
+        android:layout_below="@+id/Analytics"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:minHeight="32dp"
         android:minWidth="96dp"
         android:text="Send Data"
+        android:textSize="15sp"
+        android:layout_gravity="center_horizontal" />
+
+    <Button
+        android:id="@+id/Analytics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/newScheduleB"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:minHeight="32dp"
+        android:minWidth="96dp"
+        android:text="Analytics"
         android:textSize="15sp"
         android:layout_gravity="center_horizontal" />
 

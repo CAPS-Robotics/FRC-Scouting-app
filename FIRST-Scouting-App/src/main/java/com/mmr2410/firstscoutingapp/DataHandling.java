@@ -8,11 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -433,11 +435,13 @@ public class DataHandling {
         FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
-			fstream = new FileWriter(finalFile, true);
+			fstream = new FileWriter(finalFile, false);
 			 out = new BufferedWriter(fstream);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+
+        Log.d(tag,files.length+"");
         
         for(File f: files){
             try {
@@ -446,8 +450,9 @@ public class DataHandling {
  
 				String aLine;
 				while ((aLine = in.readLine()) != null) {
+                    Log.d(tag,f.getName()+",  "+aLine);
 					out.write(aLine);
-					out.newLine();
+                    out.newLine();
 				}
  
 				in.close();
@@ -456,9 +461,83 @@ public class DataHandling {
 			}
             
         }
+        try {
+            out.close();
+            out.flush();
+        } catch (IOException e) {
+           Log.e(tag,e.getMessage());
+        }
         
         return finalFile;
         
     }
-    
+
+    public ArrayList getJSONValuesFromAnalytics(File file,String var) {
+        ArrayList list = new ArrayList();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            Log.e(tag,e.toString());
+        } catch (IOException e) {
+            Log.e(tag,e.toString());
+        }
+
+        ArrayList<JSONObject> sections = new ArrayList<JSONObject>();
+
+        String nextSection = "";
+        try {
+            nextSection = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        while(nextSection!=null){
+            JSONObject jo = null;
+            try {
+                jo = new JSONObject(nextSection);
+
+                list.add(jo.get(var));
+
+                nextSection = reader.readLine();
+
+            } catch (JSONException e) {
+                Log.e(tag,"tried to turn something that wasn't a json object into an object");
+                Log.e(tag,"what it tried to convert: \""+nextSection+"\"");
+            } catch (IOException e) {
+                Log.e(tag,"Failed to read next line");
+            }
+
+
+        }
+
+        return list;
+    }
+
+    public ArrayList filterTeams(File f, ArrayList<String> var, ArrayList value){
+        ArrayList teams = new ArrayList();
+
+        ArrayList teamNumbers = getJSONValuesFromAnalytics(f,"teamNum");
+
+        boolean flag;
+        int x = 0;
+        for(Object o: teamNumbers){
+            flag = true;
+            int y = 0;
+            for(String s: var){
+                if(!getJSONValuesFromAnalytics(f,s).get(x).toString().equals(value.get(y).toString())){
+                    flag = false;
+                }
+                y++;
+            }
+            x++;
+            if(flag){
+                teams.add(o);
+            }
+        }
+
+        //
+
+        return teams;
+    }
 }

@@ -36,10 +36,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -165,6 +168,7 @@ public class MainActivity extends ActionBarActivity {
         currentScreen = R.layout.activity_main;
         hostB = (Button) findViewById(R.id.newScheduleB);
         clientB = (Button) findViewById(R.id.ClientB);
+        Button Analytics = (Button) findViewById(R.id.Analytics);
         Button pitScoutB = (Button) findViewById(R.id.PitScoutB);
         sendB = (Button)findViewById(R.id.SendB);
         settingsB = (Button) findViewById(R.id.SettingsB);
@@ -190,6 +194,12 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View v) {
                 toSendScreen();
 
+            }
+        });
+        Analytics.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toAnalytics();
             }
         });
         settingsB.setOnClickListener(new View.OnClickListener() {
@@ -995,13 +1005,35 @@ public class MainActivity extends ActionBarActivity {
 
     }
     
-    public toAnalytics(){
+    public void toAnalytics(){
         //compile files here
-        dh.mergeFilesInDir(fileLocation + "pitdata/","compiled",false);
+        File f = dh.mergeFilesInDir(fileLocation + "pitdata/","compiled",false);
         
-        LinearLayout analyticsLayout = new LinearLayout(this);
+        ScrollView analyticsLayout = new ScrollView(this);
+
+        LinearLayout ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
         
         setContentView(analyticsLayout);
+
+//        dh.getJSONValuesFromAnalytics(f,"teamNum");
+
+        ArrayList subTitles = new ArrayList();
+        ArrayList subVars = new ArrayList();
+
+        subTitles.add("Offense");
+        subVars.addAll(dh.getJSONValuesFromAnalytics(f, "offense"));
+
+        ArrayList<String> var = new ArrayList<String>();
+        ArrayList value = new ArrayList();
+
+        var.add("offense");
+        value.add(1);
+
+        gui.newList(this,ll,dh.filterTeams(f,var,value),subTitles,subVars);
+
+        analyticsLayout.addView(ll);
+
     }
 
     /**

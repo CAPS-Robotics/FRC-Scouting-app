@@ -1,5 +1,6 @@
 package com.mmr2410.firstscoutingapp;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.Gravity;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.view.ViewGroup.LayoutParams;
@@ -30,6 +32,14 @@ public class GUI {
     int ORIENTATION_HORIZONTAL = LinearLayout.HORIZONTAL;
 
     public TextView newTextView(android.content.Context context,String text,LinearLayout ll){
+        TextView t1 = new TextView(context);
+        t1.setText(text);
+        t1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        ll.addView(t1);
+        return t1;
+    }
+
+    public TextView newTextView(android.content.Context context,String text,ScrollView ll){
         TextView t1 = new TextView(context);
         t1.setText(text);
         t1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -71,6 +81,13 @@ public class GUI {
         TextView t1 = new TextView(context);
         t1.setText("");
         t1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,height));
+        ll.addView(t1);
+    }
+
+    public void newHorizontalDivider(android.content.Context context,int width, LinearLayout ll){
+        TextView t1 = new TextView(context);
+        t1.setText("");
+        t1.setLayoutParams(new ViewGroup.LayoutParams(width,1));
         ll.addView(t1);
     }
 
@@ -216,7 +233,6 @@ public class GUI {
         return l2;
     }
 
-
     public TextView newCounter(android.content.Context context, LinearLayout ll, ArrayList list, String s) {
 
         counterCount.add(0);
@@ -286,5 +302,45 @@ public class GUI {
         ll.addView(l1);
 
         return countView;
+    }
+
+    public void newList(android.content.Context context, LinearLayout ll, ArrayList title, ArrayList subTitle, ArrayList ... subVar){
+        LinearLayout l1 = new LinearLayout(context);
+        l1.setOrientation(LinearLayout.VERTICAL);
+
+        int y = 0;
+        for(Object o: title){
+            LinearLayout l2 = new LinearLayout(context);
+            l2.setOrientation(LinearLayout.VERTICAL);
+
+            newDivider(context, Color.BLUE,10,l2);
+
+            newTextViewTitle(context,o.toString(),25,l2);
+
+            ScrollView sv = new ScrollView(context);
+
+            LinearLayout l3 = new LinearLayout(context);
+            l3.setOrientation(LinearLayout.HORIZONTAL);
+
+            int x = 0;
+            for(Object o2: subTitle){
+                newTextView(context,o2.toString()+":   ",l3);
+                newTextView(context,subVar[x].get(y).toString(),l3);
+                newHorizontalDivider(context,25,l3);
+
+                x++;
+            }
+
+            sv.addView(l3);
+
+            l2.addView(sv);
+            l1.addView(l2);
+
+            y++;
+        }
+
+        newDivider(context, Color.BLUE,10,l1);
+
+        ll.addView(l1);
     }
 }
