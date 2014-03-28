@@ -842,6 +842,7 @@ public class MainActivity extends ActionBarActivity {
 
         Button submitB = new Button(this);
         submitB.setText("Submit");
+        ll.addView(submitB);
         submitB.setOnClickListener(new OnClickListener() { //saves all data
             @Override
             public void onClick(View view) {
@@ -887,7 +888,6 @@ public class MainActivity extends ActionBarActivity {
                 dh.endJSON();
             }
         });
-
     }
 
     public void toPitScoutingPicker(){ //need the list of teams to do this
@@ -1007,75 +1007,80 @@ public class MainActivity extends ActionBarActivity {
     
     public void toAnalytics(){
         //compile files here
-        File f = dh.mergeFilesInDir(fileLocation + "pitdata/","compiled",false);
+        final File f = dh.mergeFilesInDir(fileLocation + "pitdata/","compiled",false);
         
-        ScrollView analyticsLayout = new ScrollView(this);
+        final ScrollView analyticsLayout = new ScrollView(this);
 
-        LinearLayout ll = new LinearLayout(this);
+        final LinearLayout ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
         
         setContentView(analyticsLayout);
 
 //        dh.getJSONValuesFromAnalytics(f,"teamNum");
 
-        ArrayList subTitles = new ArrayList();
-        ArrayList subVars = new ArrayList();
+        final ArrayList subTitles = new ArrayList();
+        final ArrayList subVars = new ArrayList();
 
         subTitles.add("Offense");
         subVars.addAll(dh.getJSONValuesFromAnalytics(f, "offense"));
 
-        ArrayList<String> var = new ArrayList<String>();
-        ArrayList value = new ArrayList();
+        final ArrayList<String> var = new ArrayList<String>();
+        final ArrayList value = new ArrayList();
         
-        EditText teamNum = gui.newNotesSection(this,ll,views,"TeamNumber:");
+        EditText teamNum = gui.newNotesSection(this,ll,null,"TeamNumber:");
         teamNum.setOnKeyListener(new OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                ArrayList<String> tmpVar = var;
-                ArrayList tmpValue = value;
-                
-                if(!view.getText().equals("")){
-                    boolean valueExist = false;
-                    
-                    
-                    for(String s: tmpVar){
-                        int x = 0;
-                        if(s.equals("teamNum")){
-                            value.get(x) = Integer.parseInt(view.getText().toString());
-                            valueExist = false;
-                        }
-                        x++;
-                    }
-                    
-                    if(!valueExist){
-                        var.add("teamNum");
-                        value.add(Integer.parseInt(view.getText().toString()));
-                    }
-                    
-                    
-                }else{
-                    for(String s: tmpVar){
-                        int x = 0;
-                        if(s.equals("teamNum")){
-                            var.remove(x);
-                            value.remove(x);
-                        }
-                        x++;
-                    }
-                }
+            ArrayList<String> tmpVar = var;
+            ArrayList tmpValue = value;
+
+            EditText et = (EditText) view;
+            int teamNumber = Integer.parseInt(et.getText().toString());
+
+            if (!view.equals("")) {
+             boolean valueExist = false;
+
+             for (String s : tmpVar) {
+                 int x = 0;
+                 if (s.equals("teamNum")) {
+                     value.set(x, teamNumber);
+                     valueExist = false;
+                 }
+                 x++;
+             }
+
+             if (!valueExist) {
+                 var.add("teamNum");
+                 value.add(teamNumber);
+             }
+
+
+            } else {
+             for (String s : tmpVar) {
+                 int x = 0;
+                 if (s.equals("teamNum")) {
+                     var.remove(x);
+                     value.remove(x);
+                 }
+                 x++;
+             }
             }
+            return false;
+            }
+            });
 
-        gui.newList(this,ll,dh.filterTeams(f,var,value),subTitles,subVars);
+            gui.newList(this,ll,dh.filterTeams(f,var,value),subTitles,subVars);
 
-        analyticsLayout.addView(ll);
+            analyticsLayout.addView(ll);
 
-    }
+        }
 
-    /**
-     * <p/>
-     * Adds a section used for imputing a match. Uses matchNum to display the match number and ll
-     * is the linear layout used to add the components to.
-     */
+                /**
+                 * <p/>
+                 * Adds a section used for imputing a match. Uses matchNum to display the match number and ll
+                 * is the linear layout used to add the components to.
+                 */
+
     void newMatch(int matchNum, int numOfMatches, LinearLayout ll) {
         loopTimes = matchNum;
         while (loopTimes < numOfMatches + 1) {
