@@ -87,7 +87,7 @@ public class DataHandling {
             jwriter.flush();
             jwriter.close();
         } catch (IOException e) {
-            Log.e(tag, "ERROR CODE 307:  " + e.toString());
+            e.printStackTrace();
         }
     }
 

@@ -846,17 +846,17 @@ public class MainActivity extends ActionBarActivity {
         submitB.setOnClickListener(new OnClickListener() { //saves all data
             @Override
             public void onClick(View view) {
-                tempFile = new File(fileLocation+"matchdata/"+fileName);
+                tempFile = new File(fileLocation+"matchdata/"+fileName+"-"+matchNum);
                 try {
                     tempFile.createNewFile();
                     fos = new FileOutputStream(tempFile);
                 } catch (IOException e) {
                     Log.e(tag,"Failed to create file in matchdata when submitting scouting data");
                 }
+                dh.beginJSON(fos);
+                dh.newJSONArray("data");
                 for(int x = 0; x<teams.size();x++){
-                    if(x!=0){
-                        dh.newJSONObject();
-                    }
+                    dh.newJSONObject();
                     dh.newJSONName("matchNum",matchNum);
                     dh.newJSONName("teamNumber",teams.get(x));
                     dh.newJSONName("autoRuns",autoRuns.get(x).getCheckedRadioButtonId());
@@ -880,11 +880,10 @@ public class MainActivity extends ActionBarActivity {
                     dh.newJSONName("telePass",telePass.get(x).getText().toString());
                     dh.newJSONName("teleDriveScale",teleDriveScale.get(x).getCheckedRadioButtonId());
                     dh.newJSONName("finalNotes",finalNotes.get(x).getText().toString());
-                    
-                    if(!(x==teams.size()-1)){
-                        dh.endJSONObject();
-                    }
+                    Log.d(tag,x+"");
+                    dh.endJSONObject();
                 }
+                dh.endJSONArray();
                 dh.endJSON();
             }
         });

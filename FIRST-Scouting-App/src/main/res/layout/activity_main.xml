@@ -110,4 +110,32 @@
         android:layout_gravity="center_horizontal"
         android:minWidth="96dp" />
 
+    <Button
+        android:id="@+id/Server"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ClientB"
+        android:layout_alignRight="@+id/ClientB"
+        android:layout_below="@+id/ClientB"
+        android:layout_marginTop="16dp"
+        android:minHeight="32dp"
+        android:text="Test Server"
+        android:textSize="15sp"
+        android:layout_gravity="center_horizontal"
+        android:minWidth="96dp" />
+
+    <Button
+        android:id="@+id/Client"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ClientB"
+        android:layout_alignRight="@+id/ClientB"
+        android:layout_below="@+id/ClientB"
+        android:layout_marginTop="16dp"
+        android:minHeight="32dp"
+        android:text="Test Client"
+        android:textSize="15sp"
+        android:layout_gravity="center_horizontal"
+        android:minWidth="96dp" />
+
 </LinearLayout>
