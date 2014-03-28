@@ -1026,9 +1026,44 @@ public class MainActivity extends ActionBarActivity {
 
         ArrayList<String> var = new ArrayList<String>();
         ArrayList value = new ArrayList();
-
-        var.add("offense");
-        value.add(1);
+        
+        EditText teamNum = gui.newNotesSection(this,ll,views,"TeamNumber:");
+        teamNum.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                ArrayList<String> tmpVar = var;
+                ArrayList tmpValue = value;
+                
+                if(!view.getText().equals("")){
+                    boolean valueExist = false;
+                    
+                    
+                    for(String s: tmpVar){
+                        int x = 0;
+                        if(s.equals("teamNum")){
+                            value.get(x) = Integer.parseInt(view.getText().toString());
+                            valueExist = false;
+                        }
+                        x++;
+                    }
+                    
+                    if(!valueExist){
+                        var.add("teamNum");
+                        value.add(Integer.parseInt(view.getText().toString()));
+                    }
+                    
+                    
+                }else{
+                    for(String s: tmpVar){
+                        int x = 0;
+                        if(s.equals("teamNum")){
+                            var.remove(x);
+                            value.remove(x);
+                        }
+                        x++;
+                    }
+                }
+            }
 
         gui.newList(this,ll,dh.filterTeams(f,var,value),subTitles,subVars);
 
