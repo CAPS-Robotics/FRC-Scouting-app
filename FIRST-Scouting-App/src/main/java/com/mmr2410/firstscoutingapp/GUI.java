@@ -304,7 +304,7 @@ public class GUI {
         return countView;
     }
 
-    public void newList(android.content.Context context, LinearLayout ll, ArrayList title, ArrayList subTitle, ArrayList ... subVar){
+    public LinearLayout newList(android.content.Context context, LinearLayout ll, ArrayList title, ArrayList subTitle, ArrayList ... subVar){
         LinearLayout l1 = new LinearLayout(context);
         l1.setOrientation(LinearLayout.VERTICAL);
 
@@ -342,5 +342,6 @@ public class GUI {
         newDivider(context, Color.BLUE,10,l1);
 
         ll.addView(l1);
+        return l1;
     }
 }
